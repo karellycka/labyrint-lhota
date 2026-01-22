@@ -1,0 +1,46 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Development files
+config/config.local.php
+.env
+
+# Deployment
+DEPLOY_PACKAGE
+labyrint-deployment.zip
+DEPLOYMENT_*.md
+INFINITYFREE_*.md
+deploy-prepare.sh
+
+# Logs and cache
+storage/logs/*
+storage/cache/*
+storage/sessions/*
+
+# Keep .gitkeep files
+!storage/logs/.gitkeep
+!storage/cache/.gitkeep
+!storage/sessions/.gitkeep
+
+# Database exports
+*.sql
+
+# Backups
+*.bak
+*.backup
+*.old
+
+# Test files
+test.php
+debug.php

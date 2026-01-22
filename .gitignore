@@ -1,0 +1,52 @@
+# Composer
+/vendor/
+composer.lock
+
+# Environment
+/config/config.local.php
+.env
+
+# Storage
+/storage/cache/*
+!/storage/cache/.gitkeep
+/storage/logs/*
+!/storage/logs/.gitkeep
+/storage/sessions/*
+!/storage/sessions/.gitkeep
+
+# Uploads
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# Source images (large files - not needed in Git)
+/fotky/
+/Labyrint_logo/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Database exports
+database_export_*.sql
+
+# Deployment packages
+DEPLOY_PACKAGE/
+labyrint-deployment.zip
+DEPLOYMENT_INFINITYFREE.md
+INFINITYFREE_STRUKTURA.md
+
+# Test files
+test.php
+debug.php

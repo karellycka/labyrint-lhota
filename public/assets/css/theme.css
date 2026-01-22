@@ -1,0 +1,149 @@
+/**
+ * Theme CSS - Automaticky generováno z databáze
+ * Tento soubor je AUTOMATICKY GENEROVÁN - NEUPRAVUJTE RUČNĚ!
+ * Změny provádějte v Admin panelu (Theme Settings)
+ *
+ * Vygenerováno: 21.01.2026 06:06:49
+ */
+
+:root {
+
+    /* ===== BARVY / COLORS ===== */
+    --color-primary: #00792E;
+    --color-secondary: #2C323A;
+    --color-brown: #9C8672;
+    --color-yellow: #D4A574;
+    --color-blue: #8BA5B2;
+    --color-red: #B8664D;
+    --color-success: #4A7C59;
+    --color-error: #B8664D;
+    --color-warning: #D4A574;
+    --color-info: #8BA5B2;
+    --color-text: #2C323A;
+    --color-text-light: #6B7280;
+    --color-text-muted: #9CA3AF;
+    --color-bg-light: #F5F1EB;
+    --color-bg-white: #FDFBF7;
+    --color-bg-dark: #2C323A;
+    --color-border-light: #E5E7EB;
+    --color-border-medium: #D1D5DB;
+    --color-border-dark: #9CA3AF;
+    --color-overlay-dark: rgba(44, 50, 58, 0.6);
+    --color-overlay-light: rgba(255, 255, 255, 0.9);
+
+    /* ===== TYPOGRAFIE / TYPOGRAPHY ===== */
+    --font-family-base: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-family-heading: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-family-mono: Menlo, Monaco, Consolas, "Courier New", monospace;
+    --font-size-base: 16px;
+    --font-size-sm: 14px;
+    --font-size-xs: 12px;
+    --font-size-lg: 18px;
+    --font-size-xl: 20px;
+    --font-size-h1: 48px;
+    --font-size-h2: 36px;
+    --font-size-h3: 28px;
+    --font-size-h4: 24px;
+    --font-size-h5: 20px;
+    --font-size-h6: 16px;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --line-height-tight: 1.25;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.75;
+    --line-height-loose: 2;
+
+    /* ===== SPACING & LAYOUT ===== */
+    --border-radius: 16px;
+    --border-radius-sm: 8px;
+    --border-radius-lg: 24px;
+    --border-radius-full: 9999px;
+    --container-width: 1200px;
+    --container-padding: 20px;
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --spacing-2xl: 48px;
+    --spacing-3xl: 64px;
+    --spacing-4xl: 80px;
+    --section-padding-mobile: 60px;
+    --section-padding-desktop: 80px;
+    --grid-gap-sm: 16px;
+    --grid-gap-md: 24px;
+    --grid-gap-lg: 32px;
+
+    /* ===== EFEKTY / EFFECTS ===== */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --transition-speed-fast: 150ms;
+    --transition-speed-normal: 300ms;
+    --transition-speed-slow: 500ms;
+    --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+    --gradient-angle: 135deg;
+    --gradient-primary: linear-gradient(135deg, var(--color-primary) 0%, var(--color-blue) 100%);
+    --gradient-warm: linear-gradient(135deg, var(--color-yellow) 0%, var(--color-red) 100%);
+    --gradient-earth: linear-gradient(135deg, var(--color-brown) 0%, var(--color-yellow) 100%);
+    --opacity-disabled: 0.5;
+    --opacity-hover: 0.8;
+}
+
+/* ===== Gradient Utilities ===== */
+
+.gradient-primary {
+    background: var(--gradient-primary, linear-gradient(135deg, var(--color-primary) 0%, var(--color-blue) 100%));
+}
+
+.gradient-warm {
+    background: var(--gradient-warm, linear-gradient(135deg, var(--color-yellow) 0%, var(--color-red) 100%));
+}
+
+.gradient-earth {
+    background: var(--gradient-earth, linear-gradient(135deg, var(--color-brown) 0%, var(--color-yellow) 100%));
+}
+
+.gradient-overlay-dark {
+    position: relative;
+}
+
+.gradient-overlay-dark::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--color-overlay-dark);
+    z-index: 1;
+}
+
+/* ===== Helper Classes ===== */
+
+.text-primary { color: var(--color-primary); }
+.text-secondary { color: var(--color-secondary); }
+.text-muted { color: var(--color-text-muted); }
+
+.bg-light { background-color: var(--color-bg-light); }
+.bg-white { background-color: var(--color-bg-white); }
+.bg-dark { background-color: var(--color-bg-dark); }
+.bg-primary { background-color: var(--color-primary); }
+
+.rounded { border-radius: var(--border-radius); }
+.rounded-sm { border-radius: var(--border-radius-sm); }
+.rounded-lg { border-radius: var(--border-radius-lg); }
+.rounded-full { border-radius: var(--border-radius-full); }
+
+.shadow-sm { box-shadow: var(--shadow-sm); }
+.shadow-md { box-shadow: var(--shadow-md); }
+.shadow-lg { box-shadow: var(--shadow-lg); }
+.shadow-xl { box-shadow: var(--shadow-xl); }
+
+.transition { transition: all var(--transition-speed-normal) var(--transition-timing); }
+.transition-fast { transition: all var(--transition-speed-fast) var(--transition-timing); }
+.transition-slow { transition: all var(--transition-speed-slow) var(--transition-timing); }
+

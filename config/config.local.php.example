@@ -1,0 +1,29 @@
+<?php
+
+/**
+ * Lokální konfigurace - příklad
+ * Zkopírujte tento soubor jako config.local.php a upravte podle potřeby
+ * config.local.php je v .gitignore a nebude commitován
+ */
+
+return [
+    // Environment
+    'ENVIRONMENT' => 'development',
+
+    // Base URL
+    'BASE_URL' => 'labyrint.ct.ws',
+
+    // Database
+    'DB_HOST' => 'sql212.infinityfree.com',
+    'DB_NAME' => 'if0_40970521_labyrint',
+    'DB_USER' => 'if0_40970521',
+    'DB_PASS' => 'fwYvUlMkZQ2Hi',
+
+    // reCAPTCHA
+    'RECAPTCHA_ENABLED' => false,
+    'RECAPTCHA_SITE_KEY' => '',
+    'RECAPTCHA_SECRET' => '',
+
+    // Email
+    'CONTACT_EMAIL' => 'karellycka@gmail.com',
+];

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Admin Page</title>
+    <link rel="stylesheet" href="http://localhost:8888/labyrint/assets/css/admin.css">
+</head>
+<body class="admin-body">
+    <div style="padding: 40px;">
+        <div class="widget-manager">
+            <div class="widget-manager-header">
+                <h3>Správa widgetů</h3>
+                <button type="button" class="btn btn-primary" id="add-widget-btn">+ Přidat widget</button>
+            </div>
+
+            <div class="widgets-list">
+                <div class="widget-item">
+                    <div class="widget-item-header">
+                        <span class="widget-icon">🎯</span>
+                        <div class="widget-info">
+                            <strong>Test Widget</strong>
+                            <small>hero</small>
+                        </div>
+                        <div class="widget-actions">
+                            <button type="button" class="btn-icon">↑</button>
+                            <button type="button" class="btn-icon">↓</button>
+                            <button type="button" class="btn-icon btn-edit">✏️</button>
+                            <button type="button" class="btn-icon btn-delete">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="test-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Test Modal</h2>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>Test content</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary">Cancel</button>
+                    <button class="btn btn-primary">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.getElementById('add-widget-btn').addEventListener('click', function() {
+        console.log('Button clicked!');
+        document.getElementById('test-modal').classList.add('active');
+    });
+
+    document.querySelector('.modal-close').addEventListener('click', function() {
+        document.getElementById('test-modal').classList.remove('active');
+    });
+    </script>
+</body>
+</html>

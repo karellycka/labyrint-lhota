@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test Hero Widget Edit</title>
+    <link rel="stylesheet" href="http://localhost:8888/labyrint/assets/css/admin.css">
+    <style>
+        body { padding: 40px; background: #f5f7fa; }
+        .test-container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; }
+    </style>
+</head>
+<body class="admin-body">
+    <div class="test-container">
+        <h1>Test: Hero Widget Edit Form</h1>
+        <p>Toto je test formuláře pro editaci Hero widgetu s repeater a image gallery poli.</p>
+
+        <div id="test-form"></div>
+
+        <div style="margin-top: 30px;">
+            <button onclick="showFormData()" class="btn btn-primary">Zobrazit sebraná data</button>
+        </div>
+
+        <pre id="output" style="background: #f0f0f0; padding: 15px; margin-top: 20px; border-radius: 4px; display: none;"></pre>
+    </div>
+
+    <script>
+        // Hero widget schema (from database)
+        const heroSchema = {
+            "fields": [
+                {
+                    "key": "title",
+                    "type": "text",
+                    "label": "Nadpis (základní text)",
+                    "required": true,
+                    "translatable": true
+                },
+                {
+                    "key": "rotatingText",
+                    "type": "repeater",
+                    "label": "Rotující texty",
+                    "min": 0,
+                    "max": 10,
+                    "fields": [
+                        {
+                            "key": "text",
+                            "type": "text",
+                            "label": "Text položky",
+                            "required": true
+                        }
+                    ],
+                    "required": false,
+                    "translatable": true
+                },
+                {
+                    "key": "backgroundImages",
+                    "type": "image_gallery",
+                    "label": "Obrázky na pozadí (slideshow)",
+                    "max": 5,
+                    "required": false,
+                    "translatable": false
+                }
+            ]
+        };
+
+        // Sample data (from database)
+        const sampleData = {
+            title: "Připravujeme děti na",
+            rotatingText: [
+                { text: "reálný život" },
+                { text: "střední školu" },
+                { text: "zodpovědnou dospělost" }
+            ],
+            backgroundImages: [
+                "/assets/images/hero/slide-1.jpg",
+                "/assets/images/hero/slide-2.jpg",
+                "/assets/images/hero/slide-3.jpg"
+            ]
+        };
+
+        // Copy functions from widgets-tab.php
+        function buildRepeaterField(field, data, language) {
+            const container = document.createElement('div');
+            container.className = 'repeater-field';
+            container.dataset.fieldKey = field.key;
+
+            const items = Array.isArray(data) ? data : [];
+
+            const itemsList = document.createElement('div');
+            itemsList.className = 'repeater-items';
+
+            items.forEach((item, index) => {
+                const itemDiv = buildRepeaterItem(field, item, index);
+                itemsList.appendChild(itemDiv);
+            });
+
+            container.appendChild(itemsList);
+
+            const addButton = document.createElement('button');
+            addButton.type = 'button';
+            addButton.className = 'btn btn-sm btn-secondary';
+            addButton.textContent = '+ Přidat položku';
+            addButton.onclick = function() {
+                const newIndex = itemsList.children.length;
+                const newItem = buildRepeaterItem(field, {}, newIndex);
+                itemsList.appendChild(newItem);
+            };
+            container.appendChild(addButton);
+
+            return container;
+        }
+
+        function buildRepeaterItem(field, data, index) {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'repeater-item';
+            itemDiv.dataset.index = index;
+
+            field.fields.forEach(subfield => {
+                const subfieldGroup = document.createElement('div');
+                subfieldGroup.className = 'form-group-inline';
+
+                const label = document.createElement('label');
+                label.textContent = subfield.label + (subfield.required ? ' *' : '');
+                subfieldGroup.appendChild(label);
+
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = data[subfield.key] || '';
+                input.className = 'form-control';
+                input.dataset.fieldKey = `${field.key}[${index}].${subfield.key}`;
+                if (subfield.required) input.required = true;
+
+                subfieldGroup.appendChild(input);
+                itemDiv.appendChild(subfieldGroup);
+            });
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.className = 'btn btn-sm btn-danger';
+            deleteBtn.textContent = '×';
+            deleteBtn.onclick = function() {
+                itemDiv.remove();
+            };
+            itemDiv.appendChild(deleteBtn);
+
+            return itemDiv;
+        }
+
+        function buildImageGalleryField(field, data) {
+            const container = document.createElement('div');
+            container.className = 'image-gallery-field';
+            container.dataset.fieldKey = field.key;
+
+            const images = Array.isArray(data) ? data : [];
+
+            const imagesList = document.createElement('div');
+            imagesList.className = 'gallery-images';
+
+            images.forEach((imageUrl, index) => {
+                const imageItem = buildImageItem(imageUrl, index, field.key);
+                imagesList.appendChild(imageItem);
+            });
+
+            container.appendChild(imagesList);
+
+            const addButton = document.createElement('button');
+            addButton.type = 'button';
+            addButton.className = 'btn btn-sm btn-secondary';
+            addButton.textContent = '+ Přidat obrázek';
+            addButton.onclick = function() {
+                const newIndex = imagesList.children.length;
+                const imageUrl = prompt('Zadejte URL obrázku:');
+                if (imageUrl) {
+                    const imageItem = buildImageItem(imageUrl, newIndex, field.key);
+                    imagesList.appendChild(imageItem);
+                }
+            };
+            container.appendChild(addButton);
+
+            return container;
+        }
+
+        function buildImageItem(imageUrl, index, fieldKey) {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'gallery-image-item';
+
+            const img = document.createElement('img');
+            img.src = imageUrl;
+            img.className = 'gallery-thumbnail';
+            img.onerror = function() {
+                this.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3E?%3C/text%3E%3C/svg%3E';
+            };
+            itemDiv.appendChild(img);
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'form-control';
+            input.value = imageUrl;
+            input.dataset.fieldKey = `${fieldKey}[${index}]`;
+            input.placeholder = 'URL obrázku';
+            input.oninput = function() {
+                img.src = this.value;
+            };
+            itemDiv.appendChild(input);
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.className = 'btn btn-sm btn-danger';
+            deleteBtn.textContent = '×';
+            deleteBtn.onclick = function() {
+                itemDiv.remove();
+            };
+            itemDiv.appendChild(deleteBtn);
+
+            return itemDiv;
+        }
+
+        // Build form
+        function buildForm() {
+            const container = document.getElementById('test-form');
+            
+            heroSchema.fields.forEach(field => {
+                const formGroup = document.createElement('div');
+                formGroup.className = 'form-group';
+                formGroup.style.marginBottom = '25px';
+
+                const label = document.createElement('label');
+                label.textContent = field.label + (field.required ? ' *' : '');
+                label.style.display = 'block';
+                label.style.marginBottom = '8px';
+                label.style.fontWeight = '600';
+                formGroup.appendChild(label);
+
+                let input;
+
+                if (field.type === 'text') {
+                    input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = sampleData[field.key] || '';
+                    input.className = 'form-control';
+                    input.dataset.fieldKey = field.key;
+                    formGroup.appendChild(input);
+                } else if (field.type === 'repeater') {
+                    input = buildRepeaterField(field, sampleData[field.key], 'cs');
+                    formGroup.appendChild(input);
+                } else if (field.type === 'image_gallery') {
+                    input = buildImageGalleryField(field, sampleData[field.key]);
+                    formGroup.appendChild(input);
+                }
+
+                container.appendChild(formGroup);
+            });
+        }
+
+        function showFormData() {
+            const data = {};
+            
+            // Collect simple fields
+            document.querySelectorAll('[data-field-key]:not([data-field-key*="["])').forEach(input => {
+                if (!input.classList.contains('repeater-field') && !input.classList.contains('image-gallery-field')) {
+                    data[input.dataset.fieldKey] = input.value;
+                }
+            });
+
+            // Collect repeater fields
+            document.querySelectorAll('.repeater-field').forEach(repeater => {
+                const fieldKey = repeater.dataset.fieldKey;
+                const items = [];
+                repeater.querySelectorAll('.repeater-item').forEach(item => {
+                    const itemData = {};
+                    item.querySelectorAll('[data-field-key]').forEach(input => {
+                        const match = input.dataset.fieldKey.match(/\[(\d+)\]\.(.+)/);
+                        if (match) {
+                            itemData[match[2]] = input.value;
+                        }
+                    });
+                    if (Object.keys(itemData).length > 0) {
+                        items.push(itemData);
+                    }
+                });
+                data[fieldKey] = items;
+            });
+
+            // Collect gallery fields
+            document.querySelectorAll('.image-gallery-field').forEach(gallery => {
+                const fieldKey = gallery.dataset.fieldKey;
+                const images = [];
+                gallery.querySelectorAll('.gallery-image-item input').forEach(input => {
+                    if (input.value.trim()) {
+                        images.push(input.value.trim());
+                    }
+                });
+                data[fieldKey] = images;
+            });
+
+            const output = document.getElementById('output');
+            output.style.display = 'block';
+            output.textContent = JSON.stringify(data, null, 2);
+        }
+
+        // Initialize
+        buildForm();
+    </script>
+</body>
+</html>
