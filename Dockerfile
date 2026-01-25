@@ -12,20 +12,15 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     zip \
     unzip \
-    libzip-dev
-
-# Clear cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+    libzip-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 
-# Fix MPM configuration - disable all MPMs first, then enable only prefork
-RUN a2dismod mpm_event mpm_worker mpm_prefork 2>/dev/null || true
-RUN a2enmod mpm_prefork
-
-# Enable Apache mod_rewrite
-RUN a2enmod rewrite
+# Enable Apache modules (MPM prefork is already enabled by default in php:8.1-apache)
+RUN a2enmod rewrite headers
 
 # Set working directory
 WORKDIR /var/www/html
