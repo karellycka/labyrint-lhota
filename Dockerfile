@@ -14,10 +14,8 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Fix Apache MPM configuration - ensure only mpm_prefork is loaded
-RUN a2dismod mpm_event mpm_worker || true \
-    && a2enmod mpm_prefork \
-    && a2enmod rewrite
+# Enable required Apache modules (MPM is already configured in base image)
+RUN a2enmod rewrite
 
 # Set document root
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
