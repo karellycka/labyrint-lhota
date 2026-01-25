@@ -14,8 +14,10 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Enable required Apache modules
-RUN a2enmod rewrite
+# Fix Apache MPM configuration - ensure only mpm_prefork is loaded
+RUN a2dismod mpm_event mpm_worker || true \
+    && a2enmod mpm_prefork \
+    && a2enmod rewrite
 
 # Set document root
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
@@ -39,5 +41,5 @@ RUN mkdir -p storage/cache storage/logs storage/sessions public/uploads \
 # Expose port
 EXPOSE 80
 
-# Start Apache (with MPM fix)
-CMD ["/bin/bash", "-c", "a2dismod mpm_event mpm_worker 2>/dev/null || true && apache2-foreground"]
+# Start Apache
+CMD ["apache2-foreground"]
