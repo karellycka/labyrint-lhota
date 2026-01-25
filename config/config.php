@@ -12,10 +12,10 @@ if (file_exists(__DIR__ . '/config.local.php')) {
 }
 
 // Environment
-define('ENVIRONMENT', $localConfig['ENVIRONMENT'] ?? $_ENV['APP_ENV'] ?? 'production');
+define('ENVIRONMENT', $localConfig['ENVIRONMENT'] ?? getenv('APP_ENV') ?: $_ENV['APP_ENV'] ?? 'production');
 
 // Base URL
-define('BASE_URL', $localConfig['BASE_URL'] ?? $_ENV['BASE_URL'] ?? 'https://labyrint.cz');
+define('BASE_URL', $localConfig['BASE_URL'] ?? getenv('BASE_URL') ?: $_ENV['BASE_URL'] ?? 'https://labyrint.cz');
 
 // Paths
 define('ROOT_PATH', dirname(__DIR__));
@@ -72,5 +72,5 @@ define('RATE_LIMIT_LOGIN', 5); // Max login attempts per 15 minutes
 
 // reCAPTCHA (optional)
 define('RECAPTCHA_ENABLED', false);
-define('RECAPTCHA_SITE_KEY', $_ENV['RECAPTCHA_SITE_KEY'] ?? '');
-define('RECAPTCHA_SECRET', $_ENV['RECAPTCHA_SECRET'] ?? '');
+define('RECAPTCHA_SITE_KEY', getenv('RECAPTCHA_SITE_KEY') ?: $_ENV['RECAPTCHA_SITE_KEY'] ?? '');
+define('RECAPTCHA_SECRET', getenv('RECAPTCHA_SECRET') ?: $_ENV['RECAPTCHA_SECRET'] ?? '');
