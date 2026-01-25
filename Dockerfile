@@ -22,6 +22,10 @@ ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
+# Copy entrypoint script first
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Copy application
 WORKDIR /var/www/html
 COPY . /var/www/html
@@ -39,5 +43,5 @@ RUN mkdir -p storage/cache storage/logs storage/sessions public/uploads \
 # Expose port
 EXPOSE 80
 
-# Start Apache
-CMD ["apache2-foreground"]
+# Use custom entrypoint to fix MPM before starting Apache
+CMD ["/usr/local/bin/docker-entrypoint.sh"]
