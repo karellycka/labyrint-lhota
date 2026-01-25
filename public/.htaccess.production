@@ -8,9 +8,10 @@ Options +FollowSymLinks
 RewriteEngine On
 RewriteBase /
 
-# Force HTTPS (pro InfinityFree)
-RewriteCond %{HTTPS} off
-RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# Force HTTPS (disabled for Railway.app - SSL termination at load balancer)
+# Railway's load balancer already enforces HTTPS
+# RewriteCond %{HTTP:X-Forwarded-Proto} !https
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
 # Remove www (nebo přidejte www podle preference)
 # RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
