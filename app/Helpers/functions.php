@@ -69,14 +69,6 @@ function asset(string $path): string
 }
 
 /**
- * Generate upload URL
- */
-function upload(string $path): string
-{
-    return BASE_URL . '/uploads/' . ltrim($path, '/');
-}
-
-/**
  * Generate admin URL (no language prefix)
  */
 function adminUrl(string $path = ''): string

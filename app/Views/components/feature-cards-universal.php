@@ -36,12 +36,12 @@ $cards = $cards ?? [];
         <div class="grid grid-cols-<?= (int)$columns ?> grid-gap-lg">
             <?php foreach ($cards as $card): ?>
             <?php
-            // Handle image URL - if relative path, prepend BASE_URL
+            // Handle image URL - full URL (Cloudinary) or asset path
             $cardImageUrl = '';
             if (!empty($card['image'])) {
                 $cardImageUrl = str_starts_with($card['image'], 'http')
                     ? $card['image']
-                    : BASE_URL . $card['image'];
+                    : asset($card['image']);
             }
             $hasImage = !empty($cardImageUrl);
             ?>

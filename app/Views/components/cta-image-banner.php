@@ -16,9 +16,9 @@
 $overlay = $overlay ?? true;
 $buttonVariant = $buttonVariant ?? 'primary';
 
-// Handle image URL - if relative path, prepend BASE_URL
+// Handle image URL - full URL (Cloudinary) or asset path
 $backgroundImageUrl = isset($backgroundImage)
-    ? (str_starts_with($backgroundImage, 'http') ? $backgroundImage : BASE_URL . $backgroundImage)
+    ? (str_starts_with($backgroundImage, 'http') ? $backgroundImage : asset($backgroundImage))
     : '';
 ?>
 

@@ -21,12 +21,12 @@ $textTitle = $textTitle ?? '';
 $textContent = $textContent ?? '';
 $backgroundColor = $backgroundColor ?? 'transparent';
 
-// Handle image URL - if relative path, prepend BASE_URL
+// Handle image URL - full URL (Cloudinary) or asset path
 $imageUrl = '';
 if (!empty($image)) {
     $imageUrl = str_starts_with($image, 'http')
         ? $image
-        : BASE_URL . $image;
+        : asset($image);
 }
 
 // Determine if we need to reverse the order for mobile

@@ -29,12 +29,12 @@ $cards = $cards ?? [];
         <div class="grid grid-cols-3 grid-gap-lg">
             <?php foreach ($cards as $card): ?>
             <?php
-            // Handle image URL - if relative path, prepend BASE_URL
+            // Handle image URL - full URL (Cloudinary) or asset path
             $cardImageUrl = '';
             if (!empty($card['image'])) {
                 $cardImageUrl = str_starts_with($card['image'], 'http')
                     ? $card['image']
-                    : BASE_URL . $card['image'];
+                    : asset($card['image']);
             }
             ?>
             <div class="feature-card-with-image" style="background: <?= e($card['backgroundColor'] ?? 'var(--color-primary)') ?>; border-radius: var(--border-radius, 16px); overflow: hidden; color: var(--color-bg-white, #FDFBF7); display: flex; flex-direction: column;">

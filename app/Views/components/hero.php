@@ -39,9 +39,9 @@ $imagesToUse = !empty($backgroundImages) ? $backgroundImages : $defaultImages;
     <div class="hero-slideshow-container">
         <?php foreach ($imagesToUse as $index => $imageUrl): ?>
             <?php
-            // If it's a default image (doesn't start with /), use asset() helper
-            // Otherwise, it's an uploaded image with full path
-            $imageUrl = str_starts_with($imageUrl, '/') ? BASE_URL . $imageUrl : asset($imageUrl);
+            // If it's a full URL (Cloudinary), use directly
+            // Otherwise, use asset() helper for local assets
+            $imageUrl = str_starts_with($imageUrl, 'http') ? $imageUrl : asset($imageUrl);
             ?>
             <div class="hero-slide <?= $index === 0 ? 'active' : '' ?>"
                  style="background-image: url('<?= e($imageUrl) ?>')"></div>

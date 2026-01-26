@@ -216,113 +216,6 @@ class MediaAdminController extends Controller
         }
     }
 
-    /**
-     * Optimize image (resize + compression)
-     * Conservative approach: max 1920px, JPEG 85%, maintain format
-     */
-    private function optimizeImage(string $filepath, string $mimeType): array
-    {
-        // Get original dimensions
-        $imageInfo = getimagesize($filepath);
-        if (!$imageInfo) {
-            return ['width' => null, 'height' => null, 'size' => filesize($filepath)];
-        }
-
-        $originalWidth = $imageInfo[0];
-        $originalHeight = $imageInfo[1];
-        $maxDimension = 1920; // Conservative: Full HD
-
-        // Calculate new dimensions if needed
-        $needsResize = ($originalWidth > $maxDimension || $originalHeight > $maxDimension);
-
-        if ($needsResize) {
-            if ($originalWidth > $originalHeight) {
-                $newWidth = $maxDimension;
-                $newHeight = (int) ($originalHeight * ($maxDimension / $originalWidth));
-            } else {
-                $newHeight = $maxDimension;
-                $newWidth = (int) ($originalWidth * ($maxDimension / $originalHeight));
-            }
-        } else {
-            $newWidth = $originalWidth;
-            $newHeight = $originalHeight;
-        }
-
-        // Load image based on type
-        $sourceImage = null;
-        switch ($mimeType) {
-            case 'image/jpeg':
-                $sourceImage = @imagecreatefromjpeg($filepath);
-                break;
-            case 'image/png':
-                $sourceImage = @imagecreatefrompng($filepath);
-                break;
-            case 'image/gif':
-                $sourceImage = @imagecreatefromgif($filepath);
-                break;
-            case 'image/webp':
-                $sourceImage = @imagecreatefromwebp($filepath);
-                break;
-            default:
-                return ['width' => $originalWidth, 'height' => $originalHeight, 'size' => filesize($filepath)];
-        }
-
-        if (!$sourceImage) {
-            error_log("Failed to load image for optimization: {$filepath}");
-            return ['width' => $originalWidth, 'height' => $originalHeight, 'size' => filesize($filepath)];
-        }
-
-        // Create new image if resize needed
-        if ($needsResize) {
-            $newImage = imagecreatetruecolor($newWidth, $newHeight);
-
-            // Preserve transparency for PNG and GIF
-            if ($mimeType === 'image/png' || $mimeType === 'image/gif') {
-                imagealphablending($newImage, false);
-                imagesavealpha($newImage, true);
-                $transparent = imagecolorallocatealpha($newImage, 0, 0, 0, 127);
-                imagefilledrectangle($newImage, 0, 0, $newWidth, $newHeight, $transparent);
-            }
-
-            // Resize with high quality
-            imagecopyresampled($newImage, $sourceImage, 0, 0, 0, 0, $newWidth, $newHeight, $originalWidth, $originalHeight);
-            imagedestroy($sourceImage);
-            $sourceImage = $newImage;
-        }
-
-        // Save optimized image
-        $success = false;
-        switch ($mimeType) {
-            case 'image/jpeg':
-                $success = imagejpeg($sourceImage, $filepath, 85); // 85% quality
-                break;
-            case 'image/png':
-                imagealphablending($sourceImage, false);
-                imagesavealpha($sourceImage, true);
-                $success = imagepng($sourceImage, $filepath, 9); // Max compression
-                break;
-            case 'image/gif':
-                $success = imagegif($sourceImage, $filepath);
-                break;
-            case 'image/webp':
-                $success = imagewebp($sourceImage, $filepath, 85); // 85% quality
-                break;
-        }
-
-        imagedestroy($sourceImage);
-
-        if (!$success) {
-            error_log("Failed to save optimized image: {$filepath}");
-        }
-
-        // Return final dimensions and size
-        return [
-            'width' => $newWidth,
-            'height' => $newHeight,
-            'size' => filesize($filepath),
-            'optimized' => $needsResize || $mimeType === 'image/jpeg' || $mimeType === 'image/webp'
-        ];
-    }
 
     /**
      * Show edit form
@@ -409,18 +302,17 @@ class MediaAdminController extends Controller
                 return;
             }
 
-            // Delete from Cloudinary if it's a Cloudinary image
+            // Delete from Cloudinary
             if (!empty($media->cloudinary_public_id)) {
                 $deleted = $this->cloudinary->delete($media->cloudinary_public_id);
 
                 if (!$deleted && ENVIRONMENT === 'development') {
                     error_log("Warning: Failed to delete image from Cloudinary: {$media->cloudinary_public_id}");
                 }
-            } elseif ($media->folder !== 'cloudinary') {
-                // Delete local file if it's not from Cloudinary
-                $localPath = PUBLIC_PATH . $media->filename;
-                if (file_exists($localPath)) {
-                    unlink($localPath);
+            } else {
+                // Media without Cloudinary ID - log warning
+                if (ENVIRONMENT === 'development') {
+                    error_log("Warning: Deleting media without Cloudinary public_id: {$media->id}");
                 }
             }
 
