@@ -37,7 +37,7 @@ class EventAdminController extends Controller
             FROM events e
             LEFT JOIN event_translations et_cs ON e.id = et_cs.event_id AND et_cs.language = 'cs'
             LEFT JOIN event_translations et_en ON e.id = et_en.event_id AND et_en.language = 'en'
-            ORDER BY e.event_date DESC
+            ORDER BY e.start_date DESC
         ");
 
         $this->view('admin/events/index', [
@@ -71,10 +71,12 @@ class EventAdminController extends Controller
 
             $eventId = $this->eventModel->insert([
                 'slug' => generateSlug($_POST['title_cs'], 'cs'),
-                'event_date' => $_POST['event_date'],
-                'event_time' => $_POST['event_time'] ?? null,
+                'start_date' => $_POST['start_date'],
+                'end_date' => !empty($_POST['end_date']) ? $_POST['end_date'] : null,
+                'start_time' => !empty($_POST['start_time']) ? $_POST['start_time'] : null,
+                'end_time' => !empty($_POST['end_time']) ? $_POST['end_time'] : null,
                 'location' => $_POST['location'] ?? null,
-                'image' => $_POST['image'] ?? null
+                'featured_image' => $_POST['featured_image'] ?? null
             ]);
 
             // Insert translations
@@ -143,10 +145,12 @@ class EventAdminController extends Controller
             $this->db->beginTransaction();
 
             $this->eventModel->update($id, [
-                'event_date' => $_POST['event_date'],
-                'event_time' => $_POST['event_time'] ?? null,
+                'start_date' => $_POST['start_date'],
+                'end_date' => !empty($_POST['end_date']) ? $_POST['end_date'] : null,
+                'start_time' => !empty($_POST['start_time']) ? $_POST['start_time'] : null,
+                'end_time' => !empty($_POST['end_time']) ? $_POST['end_time'] : null,
                 'location' => $_POST['location'] ?? null,
-                'image' => $_POST['image'] ?? null
+                'featured_image' => $_POST['featured_image'] ?? null
             ]);
 
             foreach (['cs', 'en'] as $lang) {

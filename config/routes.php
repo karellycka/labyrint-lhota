@@ -84,6 +84,7 @@ return function (Router $router) {
 
     // Admin - Media
     $router->get('/admin/media', 'Admin/MediaAdminController@index');
+    $router->get('/admin/media/api/all', 'Admin/MediaAdminController@getAll');
     $router->post('/admin/media/upload', 'Admin/MediaAdminController@upload');
     $router->get('/admin/media/:id/edit', 'Admin/MediaAdminController@edit');
     $router->post('/admin/media/:id/update', 'Admin/MediaAdminController@update');

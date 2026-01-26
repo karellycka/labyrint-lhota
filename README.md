@@ -4,7 +4,8 @@ Moderní školní web s vlastním MVC frameworkem, multijazyčností (CS/EN) a a
 
 ## 🎯 Projekt Info
 
-- **Hosting**: Wedos (levný hosting pod 100 Kč/měsíc)
+- **Hosting**: Railway.app (free tier - $5 credit/měsíc, automatický Git deploy)
+- **Media Storage**: Cloudinary (CDN, automatická optimalizace, free tier 25GB)
 - **Tech Stack**: PHP 8+ (bez frameworků), MySQL, vanilla CSS/JS
 - **Jazyk Admin**: Pouze čeština (bez jazykového routingu)
 - **Jazyky Frontend**: CS + EN (automatická detekce z URL)
@@ -57,6 +58,15 @@ Moderní školní web s vlastním MVC frameworkem, multijazyčností (CS/EN) a a
 - ✅ Responsive (768px breakpoint)
 - ✅ Widget komponenty (hero, text-block, video-section, cards)
 
+**Media Management (Cloudinary):**
+- ✅ CloudinaryService - Upload/Delete/Transform obrázků
+- ✅ Automatická optimalizace (WebP, quality auto, compression)
+- ✅ CDN delivery (rychlé načítání globálně)
+- ✅ On-the-fly transformace (resize, crop, quality adjust)
+- ✅ Responsive images (srcset generování)
+- ✅ Persistentní storage (přežije Railway redeploy)
+- ✅ Helper funkce: `mediaUrl()`, `mediaResponsiveSrcset()`
+
 ### ⚠️ Co Ještě Není Hotové
 
 **Controllers (chybí):**
@@ -74,10 +84,8 @@ Moderní školní web s vlastním MVC frameworkem, multijazyčností (CS/EN) a a
 - ❌ Static page template
 
 **Services (chybí):**
-- ❌ ImageProcessor
-- ❌ FileUploader
-- ❌ EmailService
-- ❌ SEO service
+- ❌ EmailService (contact form)
+- ❌ SEO service (metadata, sitemap)
 
 **Ostatní:**
 - ❌ CSS/JS assets nemusí být kompletní
@@ -143,6 +151,20 @@ return [
 ];
 ```
 
+### Cloudinary Config
+
+Soubor: `.env` (vytvořte v root složce projektu)
+
+```env
+# Cloudinary credentials
+CLOUDINARY_CLOUD_NAME=duu1utinb
+CLOUDINARY_API_KEY=346893493165239
+CLOUDINARY_API_SECRET=hlCY5wdext-7WYLh-ygowOKYFMg
+CLOUDINARY_FOLDER=labyrint
+```
+
+**Poznámka**: `.env` soubor je v `.gitignore` a nebude commitnutý do Gitu.
+
 ### URLs
 
 - **Frontend (CS)**: http://localhost:8888/labyrint/cs/
@@ -157,6 +179,42 @@ return [
 **Admin Panel:**
 - Username: `admin`
 - Password: `admin123`
+
+## 🚀 Production Deployment (Railway.app)
+
+**Live URL**: https://labyrint-lhota-production.up.railway.app
+
+### Quick Deploy
+
+```bash
+# 1. Commit změny
+git add .
+git commit -m "Update"
+
+# 2. Push na GitHub
+git push origin main
+
+# 3. Railway automaticky deployuje! ✅
+```
+
+### Environment Variables (Railway)
+
+V Railway dashboard → Variables:
+```
+APP_ENV=production
+BASE_URL=https://labyrint-lhota-production.up.railway.app
+DB_HOST=${{MySQL.MYSQLHOST}}
+DB_PORT=${{MySQL.MYSQLPORT}}
+DB_NAME=${{MySQL.MYSQLDATABASE}}
+DB_USER=${{MySQL.MYSQLUSER}}
+DB_PASS=${{MySQL.MYSQLPASSWORD}}
+CLOUDINARY_CLOUD_NAME=duu1utinb
+CLOUDINARY_API_KEY=346893493165239
+CLOUDINARY_API_SECRET=hlCY5wdext-7WYLh-ygowOKYFMg
+CLOUDINARY_FOLDER=labyrint
+```
+
+**Detailní návod**: Viz `DEPLOYMENT_RAILWAY.md`
 
 ## 🏗️ Architektura
 
@@ -468,28 +526,32 @@ renderSection($data, ['class' => 'bg-light'])          // Sekce s obsahem
 1. ✅ ~~Fix admin routing (BEZ jazyka)~~
 2. ✅ ~~Fix URL generation helpers~~
 3. ✅ ~~Fix BASE_URL config~~
-4. ⏭️ Vytvořit BlogController views (index, show)
-5. ⏭️ Vytvořit PageController logic (načítání ze DB)
-6. ⏭️ Vytvořit Admin CRUD pro blog posty
+4. ✅ ~~Cloudinary integrace~~
+5. ✅ ~~Railway.app deployment~~
+6. ⏭️ Vytvořit BlogController views (index, show)
+7. ⏭️ Vytvořit PageController logic (načítání ze DB)
+8. ⏭️ Vytvořit Admin CRUD pro blog posty
 
 ### Medium Priority
-7. ⏭️ EventController + views
-8. ⏭️ ContactController + form
-9. ⏭️ GalleryController + views
-10. ⏭️ Admin CRUD pro pages, events, media
+9. ⏭️ EventController + views
+10. ⏭️ ContactController + form (s EmailService)
+11. ⏭️ GalleryController + views (s Cloudinary)
+12. ⏭️ Admin CRUD pro pages, events
 
 ### Low Priority
-11. ⏭️ ImageProcessor service (resize, WebP)
-12. ⏭️ EmailService (contact form)
-13. ⏭️ SitemapController (XML)
-14. ⏭️ SEO metadata management
-15. ⏭️ Real design (CSS)
+13. ⏭️ EmailService (contact form, notifications)
+14. ⏭️ SitemapController (XML, SEO)
+15. ⏭️ SEO metadata management
+16. ⏭️ Analytics integration
 
 ## 📚 Další Dokumentace
 
-- **ANALYSIS.md** - Kompletní technická analýza (60+ stránek)
-- **SETUP.md** - Detailní setup guide
+- **CLOUDINARY_SETUP.md** - Cloudinary integrace, setup a použití
+- **DEPLOYMENT_RAILWAY.md** - Detailní Railway.app deployment guide
+- **WIDGET_SYSTEM_DOCUMENTATION.md** - Dokumentace widgetového systému
+- **.claude/project-rules.md** - Pravidla pro AI asistenty
 - **database/schema.sql** - Database structure + seed data
+- **database/migrations/002_add_cloudinary_support.sql** - Cloudinary migrace
 
 ## 🔧 Pro Další Claude Instance
 
@@ -574,8 +636,10 @@ tail -f /Applications/MAMP/logs/php_error.log
 
 ---
 
-**Last Updated**: 20.01.2026
-**MAMP Version**: Latest
+**Last Updated**: 26.01.2026
+**MAMP Version**: Latest (Local dev)
 **PHP Version**: 8.5.0/8.5.0RC5 (MAMP default)
-**Status**: ✅ Core working, frontend routes working, admin working, **Theme Management System aktivní**
+**Production**: Railway.app (automatický Git deploy)
+**Media CDN**: Cloudinary (25GB free tier)
+**Status**: ✅ Core working, frontend routes working, admin working, **Theme Management System aktivní**, **Cloudinary funkční**, **Railway deployed**
 **Design**: ✅ Hygge/Severský styl, Flat design (16px border-radius), Responzivní (768px breakpoint)

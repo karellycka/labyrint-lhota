@@ -266,3 +266,107 @@ function sanitizeFilename(string $filename): string
 
     return $filename;
 }
+
+/**
+ * Get media URL (supports both local files and Cloudinary CDN)
+ *
+ * @param string|null $path Media path or URL
+ * @param array $transformations Cloudinary transformations (width, height, quality, etc.)
+ * @return string Full URL to media file
+ */
+function mediaUrl(?string $path, array $transformations = []): string
+{
+    if (empty($path)) {
+        return '';
+    }
+
+    // If it's already a full URL (Cloudinary), return as-is or with transformations
+    if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+        // If transformations are requested and it's a Cloudinary URL, apply them
+        if (!empty($transformations) && str_contains($path, 'cloudinary.com')) {
+            return applyCloudinaryTransformations($path, $transformations);
+        }
+        return $path;
+    }
+
+    // Otherwise, it's a local path - return with BASE_URL
+    return BASE_URL . $path;
+}
+
+/**
+ * Apply Cloudinary transformations to an existing Cloudinary URL
+ *
+ * @param string $url Cloudinary URL
+ * @param array $transformations Transformations to apply
+ * @return string Modified URL with transformations
+ */
+function applyCloudinaryTransformations(string $url, array $transformations): string
+{
+    // Extract parts of Cloudinary URL
+    // Format: https://res.cloudinary.com/{cloud_name}/{resource_type}/{type}/v{version}/{public_id}.{format}
+    // We need to inject transformations before the version
+
+    $parts = parse_url($url);
+    $path = $parts['path'] ?? '';
+
+    // Build transformation string
+    $transformParts = [];
+
+    if (isset($transformations['width'])) {
+        $transformParts[] = 'w_' . $transformations['width'];
+    }
+    if (isset($transformations['height'])) {
+        $transformParts[] = 'h_' . $transformations['height'];
+    }
+    if (isset($transformations['crop'])) {
+        $transformParts[] = 'c_' . $transformations['crop'];
+    }
+    if (isset($transformations['quality'])) {
+        $transformParts[] = 'q_' . $transformations['quality'];
+    }
+    if (isset($transformations['fetch_format'])) {
+        $transformParts[] = 'f_' . $transformations['fetch_format'];
+    }
+
+    if (empty($transformParts)) {
+        return $url;
+    }
+
+    $transformString = implode(',', $transformParts);
+
+    // Insert transformation into URL path
+    // Find the position before /v{version}/ or before the public_id
+    if (preg_match('#^(.*?)/(upload|fetch)(/.*?)$#', $path, $matches)) {
+        $newPath = $matches[1] . '/' . $matches[2] . '/' . $transformString . $matches[3];
+        return $parts['scheme'] . '://' . $parts['host'] . $newPath;
+    }
+
+    return $url;
+}
+
+/**
+ * Get responsive image srcset for Cloudinary images
+ *
+ * @param string|null $path Media path or URL
+ * @param array $breakpoints Array of widths (e.g., [320, 640, 1024, 1920])
+ * @return string srcset attribute value
+ */
+function mediaResponsiveSrcset(?string $path, array $breakpoints = [320, 640, 1024, 1920]): string
+{
+    if (empty($path)) {
+        return '';
+    }
+
+    // Only works with Cloudinary URLs
+    if (!str_contains($path, 'cloudinary.com')) {
+        return mediaUrl($path);
+    }
+
+    $srcsetParts = [];
+    foreach ($breakpoints as $width) {
+        $url = mediaUrl($path, ['width' => $width, 'crop' => 'scale', 'quality' => 'auto', 'fetch_format' => 'auto']);
+        $srcsetParts[] = "{$url} {$width}w";
+    }
+
+    return implode(', ', $srcsetParts);
+}

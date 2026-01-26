@@ -5,6 +5,7 @@ namespace App\Controllers\Admin;
 use App\Core\Controller;
 use App\Core\Session;
 use App\Models\Media;
+use App\Services\CloudinaryService;
 
 /**
  * Admin Media Controller - Media library management
@@ -12,11 +13,13 @@ use App\Models\Media;
 class MediaAdminController extends Controller
 {
     private Media $mediaModel;
+    private CloudinaryService $cloudinary;
 
     public function __construct()
     {
         parent::__construct();
         $this->mediaModel = new Media();
+        $this->cloudinary = new CloudinaryService();
     }
 
     /**
@@ -136,58 +139,37 @@ class MediaAdminController extends Controller
         }
 
         try {
-            // Create upload directory if it doesn't exist
-            $uploadDir = PUBLIC_PATH . '/uploads/media/' . date('Y/m');
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0755, true);
-            }
+            // Upload to Cloudinary
+            $cloudinaryResult = $this->cloudinary->upload($file['tmp_name'], [
+                'folder' => 'labyrint/media',
+                'public_id' => pathinfo($file['name'], PATHINFO_FILENAME) . '_' . time(),
+            ]);
 
-            // Generate unique filename
-            $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-            $filename = uniqid() . '_' . time() . '.' . $extension;
-            $filepath = $uploadDir . '/' . $filename;
-
-            // Move uploaded file
-            if (!move_uploaded_file($file['tmp_name'], $filepath)) {
-                throw new \Exception('Failed to move uploaded file');
-            }
-
-            // Get original size before optimization
-            $originalSize = filesize($filepath);
-
-            // Optimize image (resize + compression)
-            $optimized = $this->optimizeImage($filepath, $file['type']);
-            $width = $optimized['width'] ?? null;
-            $height = $optimized['height'] ?? null;
-            $finalSize = $optimized['size'] ?? $file['size'];
-
-            // Log optimization results
             if (ENVIRONMENT === 'development') {
-                $savedBytes = $originalSize - $finalSize;
-                $savedPercent = $originalSize > 0 ? round(($savedBytes / $originalSize) * 100, 1) : 0;
-                error_log("Image optimized: {$file['name']}");
-                error_log("  Original: " . round($originalSize / 1024, 1) . " KB");
-                error_log("  Optimized: " . round($finalSize / 1024, 1) . " KB");
-                error_log("  Saved: " . round($savedBytes / 1024, 1) . " KB ({$savedPercent}%)");
-                error_log("  Dimensions: {$width}x{$height}");
+                error_log("Image uploaded to Cloudinary: {$file['name']}");
+                error_log("  Public ID: {$cloudinaryResult['public_id']}");
+                error_log("  URL: {$cloudinaryResult['url']}");
+                error_log("  Size: " . round($cloudinaryResult['bytes'] / 1024, 1) . " KB");
+                error_log("  Dimensions: {$cloudinaryResult['width']}x{$cloudinaryResult['height']}");
             }
 
             // Save to database
             $this->db->beginTransaction();
 
             $this->mediaModel->execute("
-                INSERT INTO media (filename, original_name, mime_type, file_size, width, height, type, folder, uploaded_by)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO media (filename, original_name, mime_type, file_size, width, height, type, folder, uploaded_by, cloudinary_public_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ", [
-                '/uploads/media/' . date('Y/m') . '/' . $filename,
+                $cloudinaryResult['url'], // Store Cloudinary URL as filename
                 $file['name'],
                 $file['type'],
-                $finalSize, // Optimized file size
-                $width,
-                $height,
+                $cloudinaryResult['bytes'],
+                $cloudinaryResult['width'],
+                $cloudinaryResult['height'],
                 'image',
-                'uploads',
-                $_SESSION['user_id'] ?? null
+                'cloudinary',
+                $_SESSION['user_id'] ?? null,
+                $cloudinaryResult['public_id']
             ]);
 
             $mediaId = $this->db->lastInsertId();
@@ -205,8 +187,9 @@ class MediaAdminController extends Controller
             echo json_encode([
                 'success' => true,
                 'media_id' => $mediaId,
-                'filename' => '/uploads/media/' . date('Y/m') . '/' . $filename,
-                'file_path' => '/uploads/media/' . date('Y/m') . '/' . $filename // For backwards compatibility
+                'filename' => $cloudinaryResult['url'],
+                'file_path' => $cloudinaryResult['url'], // For backwards compatibility
+                'cloudinary_public_id' => $cloudinaryResult['public_id']
             ]);
 
         } catch (\Exception $e) {
@@ -215,11 +198,6 @@ class MediaAdminController extends Controller
                 $this->db->rollBack();
             } catch (\Exception $rollbackException) {
                 // Ignore if no active transaction
-            }
-
-            // Delete uploaded file if database insert failed
-            if (isset($filepath) && file_exists($filepath)) {
-                unlink($filepath);
             }
 
             http_response_code(500);
@@ -422,7 +400,31 @@ class MediaAdminController extends Controller
         }
 
         try {
-            // TODO: Also delete physical file
+            // Get media record first
+            $media = $this->mediaModel->find($id);
+
+            if (!$media) {
+                Session::flash('error', 'Media not found');
+                redirect(adminUrl('media'));
+                return;
+            }
+
+            // Delete from Cloudinary if it's a Cloudinary image
+            if (!empty($media->cloudinary_public_id)) {
+                $deleted = $this->cloudinary->delete($media->cloudinary_public_id);
+
+                if (!$deleted && ENVIRONMENT === 'development') {
+                    error_log("Warning: Failed to delete image from Cloudinary: {$media->cloudinary_public_id}");
+                }
+            } elseif ($media->folder !== 'cloudinary') {
+                // Delete local file if it's not from Cloudinary
+                $localPath = PUBLIC_PATH . $media->filename;
+                if (file_exists($localPath)) {
+                    unlink($localPath);
+                }
+            }
+
+            // Delete from database
             $this->mediaModel->delete($id);
             Session::flash('success', 'Media deleted successfully');
         } catch (\Exception $e) {

@@ -509,8 +509,7 @@ function buildRepeaterItem(field, data, index) {
             imageContainer.style.marginTop = '10px';
 
             const img = document.createElement('img');
-            const fullImageUrl = value ? (value.startsWith('http') ? value : '<?= BASE_URL ?>' + value) : '';
-            img.src = fullImageUrl || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="100"%3E%3Crect fill="%23f0f0f0" width="150" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999" font-size="12"%3ENení obrázek%3C/text%3E%3C/svg%3E';
+            img.src = value || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="100"%3E%3Crect fill="%23f0f0f0" width="150" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999" font-size="12"%3ENení obrázek%3C/text%3E%3C/svg%3E';
             img.style.maxWidth = '200px';
             img.style.maxHeight = '150px';
             img.style.display = 'block';
@@ -525,11 +524,10 @@ function buildRepeaterItem(field, data, index) {
             input.value = value;
             input.className = 'form-control';
             input.dataset.fieldKey = `${field.key}[${index}].${subfield.key}`;
-            input.placeholder = 'URL obrázku';
+            input.placeholder = 'Cloudinary URL';
             input.style.marginBottom = '8px';
             input.oninput = function() {
-                const url = this.value;
-                img.src = url ? (url.startsWith('http') ? url : '<?= BASE_URL ?>' + url) : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="100"%3E%3Crect fill="%23f0f0f0" width="150" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999" font-size="12"%3ENení obrázek%3C/text%3E%3C/svg%3E';
+                img.src = this.value || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="100"%3E%3Crect fill="%23f0f0f0" width="150" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999" font-size="12"%3ENení obrázek%3C/text%3E%3C/svg%3E';
             };
             if (subfield.required) input.required = true;
             imageContainer.appendChild(input);
@@ -539,9 +537,9 @@ function buildRepeaterItem(field, data, index) {
             selectBtn.className = 'btn btn-sm btn-primary';
             selectBtn.textContent = '📤 Vybrat obrázek';
             selectBtn.onclick = function() {
-                window.openMediaLibrary(function(filePath) {
-                    input.value = filePath;
-                    img.src = filePath.startsWith('http') ? filePath : '<?= BASE_URL ?>' + filePath;
+                window.openMediaLibrary(function(cloudinaryUrl) {
+                    input.value = cloudinaryUrl;
+                    img.src = cloudinaryUrl;
                 });
             };
             imageContainer.appendChild(selectBtn);
@@ -598,30 +596,29 @@ function buildImageField(field, data) {
     preview.className = 'image-preview';
 
     const img = document.createElement('img');
-    const fullImageUrl = imageUrl ? (imageUrl.startsWith('http') ? imageUrl : '<?= BASE_URL ?>' + imageUrl) : '';
-    img.src = fullImageUrl || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="150"%3E%3Crect fill="%23f0f0f0" width="200" height="150"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999"%3ENení vybrán obrázek%3C/text%3E%3C/svg%3E';
+    img.src = imageUrl || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="150"%3E%3Crect fill="%23f0f0f0" width="200" height="150"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999"%3ENení vybrán obrázek%3C/text%3E%3C/svg%3E';
     img.className = 'image-thumbnail';
     img.style.maxWidth = '300px';
     img.style.maxHeight = '200px';
     img.style.display = 'block';
     img.style.marginBottom = '10px';
     img.onerror = function() {
+        console.error('Image load error:', this.src);
         this.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="150"%3E%3Crect fill="%23ffebee" width="200" height="150"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23c62828"%3EChyba načtení%3C/text%3E%3C/svg%3E';
     };
     preview.appendChild(img);
     imageContainer.appendChild(preview);
 
-    // URL input
+    // URL input (Cloudinary URL)
     const input = document.createElement('input');
     input.type = 'text';
     input.className = 'form-control';
     input.value = imageUrl;
     input.dataset.fieldKey = field.key;
-    input.placeholder = 'URL obrázku';
+    input.placeholder = 'Cloudinary URL';
     input.style.marginBottom = '10px';
     input.oninput = function() {
-        const url = this.value;
-        img.src = url ? (url.startsWith('http') ? url : '<?= BASE_URL ?>' + url) : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="150"%3E%3Crect fill="%23f0f0f0" width="200" height="150"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999"%3ENení vybrán obrázek%3C/text%3E%3C/svg%3E';
+        img.src = this.value || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="150"%3E%3Crect fill="%23f0f0f0" width="200" height="150"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999"%3ENení vybrán obrázek%3C/text%3E%3C/svg%3E';
     };
     imageContainer.appendChild(input);
 
@@ -631,9 +628,9 @@ function buildImageField(field, data) {
     selectButton.className = 'btn btn-sm btn-primary';
     selectButton.textContent = '📤 Vybrat / Nahrát obrázek';
     selectButton.onclick = function() {
-        window.openMediaLibrary(function(filePath) {
-            input.value = filePath;
-            img.src = filePath.startsWith('http') ? filePath : '<?= BASE_URL ?>' + filePath;
+        window.openMediaLibrary(function(cloudinaryUrl) {
+            input.value = cloudinaryUrl;
+            img.src = cloudinaryUrl;
         });
     };
     imageContainer.appendChild(selectButton);
@@ -700,27 +697,24 @@ function buildImageItem(imageUrl, index, fieldKey) {
     const itemDiv = document.createElement('div');
     itemDiv.className = 'gallery-image-item';
 
-    // Thumbnail preview
+    // Thumbnail preview (Cloudinary URL)
     const img = document.createElement('img');
-    // If relative path, prepend BASE_URL
-    const fullImageUrl = imageUrl.startsWith('http') ? imageUrl : '<?= BASE_URL ?>' + imageUrl;
-    img.src = fullImageUrl;
+    img.src = imageUrl || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3E?%3C/text%3E%3C/svg%3E';
     img.className = 'gallery-thumbnail';
     img.onerror = function() {
         this.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3E?%3C/text%3E%3C/svg%3E';
     };
     itemDiv.appendChild(img);
 
-    // URL input
+    // URL input (Cloudinary URL)
     const input = document.createElement('input');
     input.type = 'text';
     input.className = 'form-control';
     input.value = imageUrl;
     input.dataset.fieldKey = `${fieldKey}[${index}]`;
-    input.placeholder = 'URL obrázku';
+    input.placeholder = 'Cloudinary URL';
     input.oninput = function() {
-        const url = this.value;
-        img.src = url.startsWith('http') ? url : '<?= BASE_URL ?>' + url;
+        img.src = this.value || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3E?%3C/text%3E%3C/svg%3E';
     };
     itemDiv.appendChild(input);
 
@@ -927,11 +921,12 @@ function loadMediaLibrary() {
                 const item = document.createElement('div');
                 item.className = 'media-library-item';
                 item.style.cssText = 'cursor: pointer; border: 2px solid transparent; border-radius: 8px; overflow: hidden; transition: all 0.2s;';
-                const filePath = media.filename || media.file_path; // Support both column names
+                const imageUrl = media.filename || media.file_path; // Cloudinary URL
                 item.innerHTML = `
-                    <img src="<?= BASE_URL ?>${filePath}"
+                    <img src="${imageUrl}"
                          alt="${media.title_cs || ''}"
-                         style="width: 100%; height: 150px; object-fit: cover; display: block;">
+                         style="width: 100%; height: 150px; object-fit: cover; display: block;"
+                         onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22150%22 height=%22150%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23999%22%3EChyba%3C/text%3E%3C/svg%3E'">
                     <div style="padding: 8px; background: #f8f9fa; font-size: 12px; text-align: center;">
                         ${media.title_cs || 'Bez názvu'}
                     </div>
@@ -939,7 +934,7 @@ function loadMediaLibrary() {
 
                 item.addEventListener('click', function() {
                     if (mediaLibraryCallback) {
-                        mediaLibraryCallback(filePath);
+                        mediaLibraryCallback(imageUrl);
                         closeModal('media-library-modal');
                     }
                 });

@@ -94,5 +94,101 @@ Před commitem zkontrolujte:
 - [ ] Používají se CSS Custom Properties z theme.css
 - [ ] Nové komponenty mají styly v `<style>` tagu nebo main.css
 
+## Media Management (Cloudinary)
+
+### ✅ VŽDY používat Cloudinary pro media
+
+**Proč:**
+- Persistentní storage (přežije Railway redeploy)
+- Automatická optimalizace (WebP, compression, quality auto)
+- CDN delivery (rychlé načítání globálně)
+- On-the-fly transformace (resize, crop bez generování souborů)
+
+### 📋 Správný postup
+
+**Pro upload obrázků:**
+```php
+// ✅ SPRÁVNĚ - použít CloudinaryService
+$cloudinary = new \App\Services\CloudinaryService();
+$result = $cloudinary->upload($tmpFile, [
+    'folder' => 'labyrint/gallery',
+]);
+
+// Uložit do DB
+$media->create([
+    'filename' => $result['url'],  // Cloudinary URL
+    'cloudinary_public_id' => $result['public_id'],
+    'folder' => 'cloudinary',
+]);
+```
+
+**Pro zobrazení obrázků:**
+```php
+// ✅ SPRÁVNĚ - použít helper funkce
+<img src="<?= e(mediaUrl($media->filename)) ?>" alt="...">
+
+// S transformacemi (resize, quality)
+<img src="<?= e(mediaUrl($media->filename, ['width' => 800, 'quality' => 'auto'])) ?>" alt="...">
+
+// Responsive images
+<img
+    src="<?= e(mediaUrl($media->filename, ['width' => 1024])) ?>"
+    srcset="<?= e(mediaResponsiveSrcset($media->filename)) ?>"
+    sizes="(max-width: 640px) 100vw, 1024px"
+    alt="...">
+```
+
+**❌ NEPOUŽÍVAT:**
+```php
+// ❌ ŠPATNĚ - manuální upload do /public/uploads
+move_uploaded_file($tmpFile, PUBLIC_PATH . '/uploads/image.jpg');
+
+// ❌ ŠPATNĚ - hardcoded cesty k obrázkům
+<img src="/uploads/image.jpg" alt="...">
+```
+
+### Dostupné helper funkce
+
+```php
+mediaUrl($filename, $transformations = [])
+// Vrací URL obrázku (Cloudinary nebo lokální fallback)
+// Transformace: width, height, crop, quality, fetch_format
+
+mediaResponsiveSrcset($filename, $widths = [320, 640, 1024, 1920])
+// Generuje srcset pro responsive images
+```
+
+**Dokumentace**: Viz `CLOUDINARY_SETUP.md`
+
+## Deployment (Railway.app)
+
+### 🚀 Automatický deployment
+
+**Workflow:**
+1. Lokální vývoj (MAMP + MySQL)
+2. Commit změn: `git add . && git commit -m "..."`
+3. Push na GitHub: `git push origin main`
+4. Railway automaticky deployuje! ✅
+
+**❌ NEPOUŽÍVAT:**
+- Manuální FTP upload
+- Přímé editace souborů na serveru
+- Kopírování souborů mimo Git
+
+### Environment Variables
+
+**Lokálně**: `.env` soubor (gitignored)
+**Production**: Railway dashboard → Variables
+
+**Kritické proměnné:**
+- `CLOUDINARY_*` - Cloudinary credentials
+- `DB_*` - Database credentials (reference z MySQL service)
+- `BASE_URL` - Production URL
+
+**Dokumentace**: Viz `DEPLOYMENT_RAILWAY.md`
+
 ## Datum vytvoření
 2026-01-21
+
+## Datum poslední aktualizace
+2026-01-26

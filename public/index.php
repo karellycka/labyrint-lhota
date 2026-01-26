@@ -208,6 +208,48 @@ if (strpos($requestUri, '/admin') === 0) {
         exit;
     }
 
+    // Events - Index
+    if ($requestUri === '/admin/events') {
+        $controller = new \App\Controllers\Admin\EventAdminController();
+        $controller->index();
+        exit;
+    }
+
+    // Events - Create (form)
+    if ($requestUri === '/admin/events/create') {
+        $controller = new \App\Controllers\Admin\EventAdminController();
+        $controller->create();
+        exit;
+    }
+
+    // Events - Store (submit)
+    if ($requestUri === '/admin/events/store' && $method === 'POST') {
+        $controller = new \App\Controllers\Admin\EventAdminController();
+        $controller->store();
+        exit;
+    }
+
+    // Events - Edit (form)
+    if (preg_match('#^/admin/events/(\d+)/edit$#', $requestUri, $matches)) {
+        $controller = new \App\Controllers\Admin\EventAdminController();
+        $controller->edit((int)$matches[1]);
+        exit;
+    }
+
+    // Events - Update (submit)
+    if (preg_match('#^/admin/events/(\d+)/update$#', $requestUri, $matches) && $method === 'POST') {
+        $controller = new \App\Controllers\Admin\EventAdminController();
+        $controller->update((int)$matches[1]);
+        exit;
+    }
+
+    // Events - Delete
+    if (preg_match('#^/admin/events/(\d+)/delete$#', $requestUri, $matches) && $method === 'POST') {
+        $controller = new \App\Controllers\Admin\EventAdminController();
+        $controller->delete((int)$matches[1]);
+        exit;
+    }
+
     // Media - API Get All (JSON)
     if ($requestUri === '/admin/media/api/all' && $method === 'GET') {
         $controller = new \App\Controllers\Admin\MediaAdminController();
