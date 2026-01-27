@@ -8,6 +8,24 @@ use App\Services\WidgetRenderer;
 
 // Initialize widget renderer
 $widgetRenderer = new WidgetRenderer();
+
+// Check if first widget is a fullscreen hero
+$hasFullscreenHero = false;
+if (!empty($widgets) && isset($widgets[0])) {
+    $firstWidget = $widgets[0];
+    $widgetTypeKey = $firstWidget->type_key ?? '';
+    
+    // Check if it's a hero widget
+    if ($widgetTypeKey === 'hero') {
+        // Get widget settings to check height
+        $widgetSettings = !empty($firstWidget->settings) 
+            ? json_decode($firstWidget->settings, true) 
+            : [];
+        
+        $heroHeight = $widgetSettings['height'] ?? 'lg';
+        $hasFullscreenHero = ($heroHeight === 'full');
+    }
+}
 ?>
 
 <?php if (!empty($widgets)): ?>

@@ -46,7 +46,12 @@
     <!-- CSRF Token for AJAX -->
     <meta name="csrf-token" content="<?= \App\Core\Session::generateCSRFToken() ?>">
 </head>
-<body>
+<?php
+// Determine if we have a fullscreen hero (set by dynamic.php or default to false)
+$hasFullscreenHero = $hasFullscreenHero ?? false;
+$bodyClass = $hasFullscreenHero ? 'has-hero-fullscreen' : 'no-hero-fullscreen';
+?>
+<body class="<?= $bodyClass ?>">
     <!-- Header -->
     <header class="site-header">
         <div class="container">

@@ -14,6 +14,7 @@ class WidgetAdminController extends Controller
 {
     private PageWidget $pageWidgetModel;
     private WidgetType $widgetTypeModel;
+    private const CSRF_HEADER = 'HTTP_X_CSRF_TOKEN';
 
     public function __construct()
     {
@@ -41,6 +42,18 @@ class WidgetAdminController extends Controller
 
         $this->pageWidgetModel = new PageWidget();
         $this->widgetTypeModel = new WidgetType();
+    }
+
+    /**
+     * Read CSRF token from POST or header
+     */
+    private function getCsrfToken(): string
+    {
+        $token = $_POST['csrf_token'] ?? '';
+        if (empty($token) && isset($_SERVER[self::CSRF_HEADER])) {
+            $token = (string)$_SERVER[self::CSRF_HEADER];
+        }
+        return $token;
     }
 
     /**
@@ -81,7 +94,7 @@ class WidgetAdminController extends Controller
     public function create(int $pageId): void
     {
         // Validate CSRF
-        if (!Session::validateCSRFToken($_POST['csrf_token'] ?? '')) {
+        if (!Session::validateCSRFToken($this->getCsrfToken())) {
             http_response_code(403);
             echo json_encode(['error' => 'Invalid CSRF token']);
             return;
@@ -120,7 +133,7 @@ class WidgetAdminController extends Controller
     public function update(int $widgetId): void
     {
         // Validate CSRF
-        if (!Session::validateCSRFToken($_POST['csrf_token'] ?? '')) {
+        if (!Session::validateCSRFToken($this->getCsrfToken())) {
             http_response_code(403);
             echo json_encode(['error' => 'Invalid CSRF token']);
             return;
@@ -156,7 +169,7 @@ class WidgetAdminController extends Controller
     public function delete(int $widgetId): void
     {
         // Validate CSRF
-        if (!Session::validateCSRFToken($_POST['csrf_token'] ?? '')) {
+        if (!Session::validateCSRFToken($this->getCsrfToken())) {
             http_response_code(403);
             echo json_encode(['error' => 'Invalid CSRF token']);
             return;
@@ -178,7 +191,7 @@ class WidgetAdminController extends Controller
     public function moveUp(int $widgetId): void
     {
         // Validate CSRF
-        if (!Session::validateCSRFToken($_POST['csrf_token'] ?? '')) {
+        if (!Session::validateCSRFToken($this->getCsrfToken())) {
             http_response_code(403);
             echo json_encode(['error' => 'Invalid CSRF token']);
             return;
@@ -206,7 +219,7 @@ class WidgetAdminController extends Controller
     public function moveDown(int $widgetId): void
     {
         // Validate CSRF
-        if (!Session::validateCSRFToken($_POST['csrf_token'] ?? '')) {
+        if (!Session::validateCSRFToken($this->getCsrfToken())) {
             http_response_code(403);
             echo json_encode(['error' => 'Invalid CSRF token']);
             return;
@@ -234,7 +247,7 @@ class WidgetAdminController extends Controller
     public function reorder(int $pageId): void
     {
         // Validate CSRF
-        if (!Session::validateCSRFToken($_POST['csrf_token'] ?? '')) {
+        if (!Session::validateCSRFToken($this->getCsrfToken())) {
             http_response_code(403);
             echo json_encode(['error' => 'Invalid CSRF token']);
             return;

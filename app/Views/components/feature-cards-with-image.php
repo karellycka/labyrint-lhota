@@ -6,7 +6,8 @@
  * Očekávané proměnné:
  * @var string $sectionTitle - Nadpis sekce (volitelné)
  * @var string $sectionSubtitle - Podnadpis sekce (volitelné)
- * @var array $cards - Pole karet [{'image', 'title', 'subtitle', 'text', 'backgroundColor'}]
+ * @var array $cards - Pole karet [{'image', 'title', 'tags', 'text', 'backgroundColor', 'buttonText', 'buttonUrl'}]
+ *       tags - Pole štítků [{'text', 'tagColor'}]
  */
 
 // Default values
@@ -37,7 +38,7 @@ $cards = $cards ?? [];
                     : asset($card['image']);
             }
             ?>
-            <div class="feature-card-with-image" style="background: <?= e($card['backgroundColor'] ?? 'var(--color-primary)') ?>; border-radius: var(--border-radius, 16px); overflow: hidden; color: var(--color-bg-white, #FDFBF7); display: flex; flex-direction: column;">
+            <div class="feature-card-with-image" style="background: <?= e($card['backgroundColor'] ?? 'var(--color-primary)') ?>; border-radius: var(--border-radius, 16px); overflow: hidden; color: var(--color-text, #2C323A); display: flex; flex-direction: column;">
                 <?php if (!empty($cardImageUrl)): ?>
                 <div class="feature-card-image" style="width: 100%; height: 250px; overflow: hidden; flex-shrink: 0;">
                     <img src="<?= e($cardImageUrl) ?>" alt="<?= e($card['title'] ?? '') ?>" style="width: 100%; height: 100%; object-fit: cover;">
@@ -50,8 +51,12 @@ $cards = $cards ?? [];
                             <h4 class="feature-card-title"><?= e($card['title']) ?></h4>
                         <?php endif; ?>
 
-                        <?php if (!empty($card['subtitle'])): ?>
-                            <h5 class="feature-card-subtitle"><?= e($card['subtitle']) ?></h5>
+                        <?php if (!empty($card['tags']) && is_array($card['tags'])): ?>
+                            <div class="feature-card-tags">
+                                <?php foreach ($card['tags'] as $tag): ?>
+                                    <span class="feature-card-tag" style="background: <?= e($tag['tagColor'] ?? 'var(--color-primary)') ?>;"><?= e($tag['text'] ?? '') ?></span>
+                                <?php endforeach; ?>
+                            </div>
                         <?php endif; ?>
 
                         <?php if (!empty($card['text'])): ?>

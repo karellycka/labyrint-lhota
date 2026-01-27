@@ -167,6 +167,7 @@ CLOUDINARY_FOLDER=labyrint
 
 ### URLs
 
+- **Local Base URL**: http://localhost:8888/labyrint
 - **Frontend (CS)**: http://localhost:8888/labyrint/cs/
 - **Frontend (EN)**: http://localhost:8888/labyrint/en/
 - **Admin Login**: http://localhost:8888/labyrint/admin/login

@@ -870,6 +870,33 @@ select.form-control {
     margin-top: 5px;
 }
 
+.form-group-repeater-nested {
+    width: 100%;
+}
+.form-group-repeater-nested > label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #666;
+}
+.repeater-field-nested {
+    margin-top: 8px;
+}
+.repeater-item-nested {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 10px;
+}
+.repeater-item-nested .form-group-inline {
+    flex: 1;
+    min-width: 120px;
+}
+.repeater-item-nested .btn {
+    flex-shrink: 0;
+}
+
 /* Image gallery field */
 .image-gallery-field {
     border: 1px solid #e1e8ed;

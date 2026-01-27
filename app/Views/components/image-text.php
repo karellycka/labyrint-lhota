@@ -8,7 +8,7 @@
  * @var string $sectionSubtitle - Podnadpis sekce H3 (volitelné, centrované)
  * @var string $imagePosition - Pozice fotky: 'left' nebo 'right' (default: 'left')
  * @var string $image - URL obrázku (povinné)
- * @var string $textTitle - Nadpis textu H4 (volitelné)
+ * @var string $textTitle - Nadpis textu H2 (volitelné)
  * @var string $textContent - Obsah textu WYSIWYG (povinné)
  */
 
@@ -34,55 +34,56 @@ $reverseClass = $imagePosition === 'right' ? '' : 'reverse-mobile';
 
 // Determine if background color is set (not transparent)
 $hasBackground = $backgroundColor !== 'transparent' && !empty($backgroundColor);
-$sectionClass = $hasBackground ? 'section' : 'section bg-light';
-$sectionStyle = $hasBackground ? "background: {$backgroundColor}; color: var(--color-bg-white, #FDFBF7);" : '';
+$sectionClass = 'section bg-light image-text-section';
+$cardStyle = $hasBackground ? "background: {$backgroundColor};" : '';
+$layoutStyle = trim(($imagePosition === 'right' ? 'direction: rtl;' : '') . ($cardStyle ? ' ' . $cardStyle : ''));
 ?>
 
-<section class="<?= $sectionClass ?>" style="<?= $sectionStyle ?>">
+<section class="<?= $sectionClass ?>">
     <div class="container">
         <?php if (!empty($sectionTitle)): ?>
-            <h2 class="section-title" <?= $hasBackground ? 'style="color: var(--color-bg-white, #FDFBF7);"' : '' ?>><?= e($sectionTitle) ?></h2>
+            <h2 class="section-title"><?= e($sectionTitle) ?></h2>
         <?php endif; ?>
 
         <?php if (!empty($sectionSubtitle)): ?>
-            <h3 <?= $hasBackground ? 'style="color: var(--color-bg-white, #FDFBF7);"' : '' ?>><?= e($sectionSubtitle) ?></h3>
+            <h3><?= e($sectionSubtitle) ?></h3>
         <?php endif; ?>
 
-        <div class="two-column <?= $reverseClass ?>" style="<?= $imagePosition === 'right' ? 'direction: rtl;' : '' ?>">
+        <div class="two-column image-text-layout <?= $reverseClass ?>" style="<?= $layoutStyle ?>">
             <?php if ($imagePosition === 'right'): ?>
                 <!-- Text first, then image (RTL reverses to image right, text left) -->
                 <div class="text-block" style="direction: ltr;">
                     <?php if (!empty($textTitle)): ?>
-                        <h4 class="text-block-title" <?= $hasBackground ? 'style="color: var(--color-bg-white, #FDFBF7);"' : '' ?>><?= e($textTitle) ?></h4>
+                        <h2 class="text-block-title"><?= e($textTitle) ?></h2>
                     <?php endif; ?>
 
                     <?php if (!empty($textContent)): ?>
-                        <div class="text-block-content" <?= $hasBackground ? 'style="color: var(--color-bg-white, #FDFBF7);"' : '' ?>>
+                        <div class="text-block-content">
                             <?= $textContent ?>
                         </div>
                     <?php endif; ?>
                 </div>
 
-                <div style="direction: ltr;">
+                <div class="image-text-media" style="direction: ltr;">
                     <?php if (!empty($imageUrl)): ?>
-                        <img src="<?= e($imageUrl) ?>" alt="<?= e($textTitle ?: $sectionTitle) ?>" style="width: 100%; height: auto; border-radius: var(--border-radius, 16px); object-fit: cover;">
+                        <img class="image-text-media-img" src="<?= e($imageUrl) ?>" alt="<?= e($textTitle ?: $sectionTitle) ?>">
                     <?php endif; ?>
                 </div>
             <?php else: ?>
                 <!-- Image first, then text (default left position) -->
-                <div>
+                <div class="image-text-media">
                     <?php if (!empty($imageUrl)): ?>
-                        <img src="<?= e($imageUrl) ?>" alt="<?= e($textTitle ?: $sectionTitle) ?>" style="width: 100%; height: auto; border-radius: var(--border-radius, 16px); object-fit: cover;">
+                        <img class="image-text-media-img" src="<?= e($imageUrl) ?>" alt="<?= e($textTitle ?: $sectionTitle) ?>">
                     <?php endif; ?>
                 </div>
 
                 <div class="text-block">
                     <?php if (!empty($textTitle)): ?>
-                        <h4 class="text-block-title" <?= $hasBackground ? 'style="color: var(--color-bg-white, #FDFBF7);"' : '' ?>><?= e($textTitle) ?></h4>
+                        <h2 class="text-block-title"><?= e($textTitle) ?></h2>
                     <?php endif; ?>
 
                     <?php if (!empty($textContent)): ?>
-                        <div class="text-block-content" <?= $hasBackground ? 'style="color: var(--color-bg-white, #FDFBF7);"' : '' ?>>
+                        <div class="text-block-content">
                             <?= $textContent ?>
                         </div>
                     <?php endif; ?>

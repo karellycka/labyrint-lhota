@@ -26,10 +26,26 @@ $backgroundImages = $backgroundImages ?? [];
 $videoSource = $videoSource ?? 'external';
 $videoUrl = $videoUrl ?? '';
 $cloudinaryVideoId = $cloudinaryVideoId ?? '';
+$videoCoverImage = $videoCoverImage ?? '';
+
+// Resolve Cloudinary cloud name safely
+$cloudinaryCloudName = '';
+if (defined('CLOUDINARY_CLOUD_NAME')) {
+    $cloudinaryCloudName = (string)CLOUDINARY_CLOUD_NAME;
+} elseif (defined('CONFIG_PATH')) {
+    $cloudinaryConfigPath = CONFIG_PATH . '/cloudinary.php';
+    if (file_exists($cloudinaryConfigPath)) {
+        $cloudinaryConfig = require $cloudinaryConfigPath;
+        $cloudinaryCloudName = $cloudinaryConfig['cloud_name'] ?? '';
+    }
+}
 
 $overlayClass = $overlay ? 'hero-overlay' : '';
 $heightClass = "hero-{$height}";
 $mediaClass = $mediaType === 'video' ? 'hero-video' : 'hero-slideshow';
+
+$videoCoverUrl = $videoCoverImage ? mediaUrl($videoCoverImage) : '';
+$videoCoverStyle = $videoCoverUrl ? ' style="background-image: url(\'' . e($videoCoverUrl) . '\')"' : '';
 
 // Default fallback images if none uploaded (only for image type)
 $defaultImages = [
@@ -47,7 +63,7 @@ $imagesToUse = !empty($backgroundImages) ? $backgroundImages : $defaultImages;
 <section class="hero <?= $mediaClass ?> <?= $heightClass ?> <?= $overlayClass ?>">
     <?php if ($mediaType === 'video'): ?>
         <!-- VIDEO BACKGROUND -->
-        <div class="hero-video-container">
+        <div class="hero-video-container"<?= $videoCoverStyle ?>>
             <?php if ($videoSource === 'external' && !empty($videoUrl)): ?>
                 <!-- External video (YouTube/Vimeo) -->
                 <iframe
@@ -57,16 +73,17 @@ $imagesToUse = !empty($backgroundImages) ? $backgroundImages : $defaultImages;
                     allow="autoplay; fullscreen; picture-in-picture"
                     allowfullscreen>
                 </iframe>
-            <?php elseif ($videoSource === 'cloudinary' && !empty($cloudinaryVideoId)): ?>
+            <?php elseif ($videoSource === 'cloudinary' && !empty($cloudinaryVideoId) && !empty($cloudinaryCloudName)): ?>
                 <!-- Cloudinary video -->
                 <video
                     class="hero-video-element"
                     autoplay
                     muted
                     loop
-                    playsinline>
-                    <source src="https://res.cloudinary.com/<?= CLOUDINARY_CLOUD_NAME ?>/video/upload/<?= e($cloudinaryVideoId) ?>.mp4" type="video/mp4">
-                    <source src="https://res.cloudinary.com/<?= CLOUDINARY_CLOUD_NAME ?>/video/upload/<?= e($cloudinaryVideoId) ?>.webm" type="video/webm">
+                    playsinline
+                    <?= $videoCoverUrl ? 'poster="' . e($videoCoverUrl) . '"' : '' ?>>
+                    <source src="https://res.cloudinary.com/<?= e($cloudinaryCloudName) ?>/video/upload/<?= e($cloudinaryVideoId) ?>.mp4" type="video/mp4">
+                    <source src="https://res.cloudinary.com/<?= e($cloudinaryCloudName) ?>/video/upload/<?= e($cloudinaryVideoId) ?>.webm" type="video/webm">
                 </video>
             <?php endif; ?>
         </div>

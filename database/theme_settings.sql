@@ -30,6 +30,9 @@ INSERT INTO theme_settings (setting_key, setting_value, category, type, label, d
 ('color_yellow', '#D4A574', 'colors', 'color', 'Žlutá (medová)', 'Teplá medová žlutá'),
 ('color_blue', '#8BA5B2', 'colors', 'color', 'Modrá (fjordová)', 'Chladná šedomodrá jako severské nebe'),
 ('color_red', '#B8664D', 'colors', 'color', 'Červená (terakota)', 'Teplá cihlová/rezavá červená'),
+('color_green', '#A7C7B1', 'colors', 'color', 'Zelená (šalvějová)', 'Jemná šalvějová zelená'),
+('color_red_alt', '#D3A08F', 'colors', 'color', 'Červená (koralová)', 'Jemnější korálový odstín červené'),
+('color_teal', '#9EC4C0', 'colors', 'color', 'Modrozelená', 'Tichá modrozelená v hygge paletě'),
 
 -- Sémantické barvy
 ('color_success', '#4A7C59', 'colors', 'color', 'Success (úspěch)', 'Barva pro pozitivní zprávy a úspěšné akce'),

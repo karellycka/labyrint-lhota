@@ -28,6 +28,10 @@ $aspectRatio = $aspectRatio ?? '16:9';
                 </div>
             </div>
 
+            <div class="color-block-logo">
+                <img src="<?= e(asset('images/logo/labyrint_rc_claim_lhota.png')) ?>" alt="Labyrint základní škola Lhota">
+            </div>
+
             <!-- Video (překrývá barevný blok) -->
             <?php if (!empty($videoId)): ?>
             <div class="video-overlay">

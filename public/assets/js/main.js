@@ -125,8 +125,10 @@
     // Header visibility on scroll (hide on hero, show after)
     const header = document.querySelector('.site-header');
     const hero = document.querySelector('.hero');
+    const hasFullscreenHero = document.body.classList.contains('has-hero-fullscreen');
 
-    if (header && hero) {
+    // Only use IntersectionObserver for pages with fullscreen hero
+    if (header && hero && hasFullscreenHero) {
         // Intersection Observer pro detekci kdy hero opustí viewport
         const heroObserver = new IntersectionObserver(
             (entries) => {
@@ -148,6 +150,7 @@
 
         heroObserver.observe(hero);
     }
+    // For pages without fullscreen hero, header is always visible via CSS
 
     console.log('Main JS loaded');
 })();

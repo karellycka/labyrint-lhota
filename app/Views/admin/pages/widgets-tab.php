@@ -177,6 +177,24 @@
 const pageId = <?= $page->id ?>;
 const csrfToken = '<?= \App\Core\Session::generateCSRFToken() ?>';
 
+function getCsrfToken() {
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    return (meta && meta.content) ? meta.content : csrfToken;
+}
+
+function withCsrfHeaders(headers = {}) {
+    return Object.assign({}, headers, {
+        'X-CSRF-Token': getCsrfToken()
+    });
+}
+
+function appendCsrf(formData) {
+    if (!formData.has('csrf_token')) {
+        formData.append('csrf_token', getCsrfToken());
+    }
+    return formData;
+}
+
 // Open/close modals
 window.openModal = function(modalId) {
     console.log('openModal called with:', modalId);
@@ -519,6 +537,87 @@ function buildRepeaterField(field, data, language) {
     return container;
 }
 
+// Build nested repeater (e.g. tags inside a card)
+function buildNestedRepeaterField(subfield, value, parentPath) {
+    const fullKey = parentPath + '.' + subfield.key;
+    const container = document.createElement('div');
+    container.className = 'repeater-field repeater-field-nested';
+    container.dataset.fieldKey = fullKey;
+
+    const items = Array.isArray(value) ? value : [];
+    const itemsList = document.createElement('div');
+    itemsList.className = 'repeater-items';
+
+    items.forEach((item, j) => {
+        const itemEl = buildNestedRepeaterItem(subfield, item, j, fullKey);
+        itemsList.appendChild(itemEl);
+    });
+    container.appendChild(itemsList);
+
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.className = 'btn btn-sm btn-secondary';
+    addBtn.textContent = '+ Přidat štítek';
+    addBtn.onclick = function() {
+        const newIndex = itemsList.children.length;
+        const newItem = buildNestedRepeaterItem(subfield, {}, newIndex, fullKey);
+        itemsList.appendChild(newItem);
+    };
+    container.appendChild(addBtn);
+
+    return container;
+}
+
+function buildNestedRepeaterItem(subfield, data, nestedIndex, parentPath) {
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'repeater-item repeater-item-nested';
+    itemDiv.dataset.index = nestedIndex;
+
+    (subfield.fields || []).forEach(subsub => {
+        const group = document.createElement('div');
+        group.className = 'form-group-inline';
+        const label = document.createElement('label');
+        label.textContent = subsub.label + (subsub.required ? ' *' : '');
+        group.appendChild(label);
+
+        const val = data[subsub.key] || subsub.default || '';
+        let input;
+        const key = parentPath + '[' + nestedIndex + '].' + subsub.key;
+
+        if (subsub.type === 'select') {
+            input = document.createElement('select');
+            (subsub.options || []).forEach(opt => {
+                const o = document.createElement('option');
+                o.value = opt.value;
+                o.textContent = opt.label;
+                if (val === opt.value) o.selected = true;
+                input.appendChild(o);
+            });
+            input.className = 'form-control';
+            input.dataset.fieldKey = key;
+            if (subsub.required) input.required = true;
+        } else {
+            input = document.createElement('input');
+            input.type = subsub.type === 'number' ? 'number' : 'text';
+            input.value = val;
+            input.className = 'form-control';
+            input.dataset.fieldKey = key;
+            if (subsub.required) input.required = true;
+        }
+        group.appendChild(input);
+        itemDiv.appendChild(group);
+    });
+
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.className = 'btn btn-sm btn-danger';
+    delBtn.textContent = '×';
+    delBtn.onclick = function() { itemDiv.remove(); };
+    itemDiv.appendChild(delBtn);
+
+    return itemDiv;
+}
+
 // Build single repeater item
 function buildRepeaterItem(field, data, index) {
     const itemDiv = document.createElement('div');
@@ -527,6 +626,20 @@ function buildRepeaterItem(field, data, index) {
 
     // Build subfields
     field.fields.forEach(subfield => {
+        const value = data[subfield.key] ?? subfield.default ?? '';
+
+        if (subfield.type === 'repeater') {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'form-group form-group-repeater-nested';
+            const label = document.createElement('label');
+            label.textContent = subfield.label + (subfield.required ? ' *' : '');
+            wrapper.appendChild(label);
+            const nested = buildNestedRepeaterField(subfield, value, field.key + '[' + index + ']');
+            wrapper.appendChild(nested);
+            itemDiv.appendChild(wrapper);
+            return;
+        }
+
         const subfieldGroup = document.createElement('div');
         subfieldGroup.className = 'form-group-inline';
 
@@ -535,7 +648,6 @@ function buildRepeaterItem(field, data, index) {
         subfieldGroup.appendChild(label);
 
         let input;
-        const value = data[subfield.key] || subfield.default || '';
 
         if (subfield.type === 'select') {
             input = document.createElement('select');
@@ -794,13 +906,15 @@ window.saveWidget = function() {
         : `<?= adminUrl("pages/{$page->id}/widgets/create") ?>`;
 
     const formData = new FormData();
-    formData.append('csrf_token', csrfToken);
+    appendCsrf(formData);
     formData.append('translations', JSON.stringify(translations));
     if (!widgetId) formData.append('widget_type_key', widgetTypeKey);
 
     fetch(url, {
         method: 'POST',
-        body: formData
+        headers: withCsrfHeaders(),
+        body: formData,
+        credentials: 'same-origin'
     })
     .then(r => r.json())
     .then(result => {
@@ -838,22 +952,57 @@ function collectFormData(language) {
         }
     });
 
-    // Collect repeater fields
+    function escapeRegExp(s) {
+        return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+    function collectRepeaterItems(repeaterEl, fieldKey) {
+        const out = [];
+        const re = new RegExp('^' + escapeRegExp(fieldKey) + '\\[(\\d+)\\]\\.(.+)$');
+        repeaterEl.querySelectorAll('.repeater-item').forEach(item => {
+            const tagData = {};
+            item.querySelectorAll('input[data-field-key], select[data-field-key], textarea[data-field-key]').forEach(inp => {
+                const m = inp.dataset.fieldKey.match(re);
+                if (!m) return;
+                tagData[m[2]] = inp.type === 'checkbox' ? inp.checked : inp.value;
+            });
+            if (Object.keys(tagData).length > 0) out.push(tagData);
+        });
+        return out;
+    }
+
+    // Collect repeater fields (top-level only; nested handled per-item)
     const repeaters = container.querySelectorAll('.repeater-field');
     repeaters.forEach(repeater => {
         const fieldKey = repeater.dataset.fieldKey;
+        if (fieldKey && fieldKey.includes('].')) {
+            return;
+        }
         const items = [];
+        const matchIndex = new RegExp('^' + escapeRegExp(fieldKey) + '\\[(\\d+)\\]\\.(.+)$');
 
-        repeater.querySelectorAll('.repeater-item').forEach(item => {
+        repeater.querySelectorAll(':scope > .repeater-items > .repeater-item').forEach(item => {
             const itemData = {};
-            item.querySelectorAll('[data-field-key]').forEach(input => {
-                // Extract subfield key from pattern: fieldName[index].subfieldName
-                const match = input.dataset.fieldKey.match(/\[(\d+)\]\.(.+)/);
-                if (match) {
-                    const subfieldKey = match[2];
-                    itemData[subfieldKey] = input.value;
-                }
+            const directInputs = item.querySelectorAll('input[data-field-key], select[data-field-key], textarea[data-field-key]');
+            directInputs.forEach(input => {
+                const m = input.dataset.fieldKey.match(matchIndex);
+                if (!m) return;
+                const subfieldKey = m[2];
+                if (subfieldKey.includes('[')) return;
+                const nest = item.querySelector('.repeater-field[data-field-key^="' + fieldKey + '[' + m[1] + ']."]');
+                if (nest && input.closest('.repeater-field') === nest) return;
+                itemData[subfieldKey] = input.type === 'checkbox' ? input.checked : input.value;
             });
+
+            item.querySelectorAll(':scope > .form-group-repeater-nested .repeater-field').forEach(nestedRepeater => {
+                const nk = nestedRepeater.dataset.fieldKey;
+                if (!nk || !nk.startsWith(fieldKey + '[')) return;
+                const prefix = nk.replace(/\.[^.]+$/, '');
+                const nestedKey = nk.slice(prefix.length + 1);
+                const nestedKeyBase = nestedKey.replace(/\[\d+\]$/, '');
+                const collected = collectRepeaterItems(nestedRepeater, nk);
+                itemData[nestedKeyBase] = collected;
+            });
+
             if (Object.keys(itemData).length > 0) {
                 items.push(itemData);
             }
@@ -885,11 +1034,13 @@ window.deleteWidget = function(widgetId) {
     if (!confirm('Opravdu chcete smazat tento widget?')) return;
 
     const formData = new FormData();
-    formData.append('csrf_token', csrfToken);
+    appendCsrf(formData);
 
     fetch(`<?= adminUrl('widgets/') ?>${widgetId}/delete`, {
         method: 'POST',
-        body: formData
+        headers: withCsrfHeaders(),
+        body: formData,
+        credentials: 'same-origin'
     })
     .then(r => r.json())
     .then(result => {
@@ -917,11 +1068,13 @@ window.moveWidgetDown = function(widgetId) {
 
 function moveWidget(widgetId, direction) {
     const formData = new FormData();
-    formData.append('csrf_token', csrfToken);
+    appendCsrf(formData);
 
     fetch(`<?= adminUrl('widgets/') ?>${widgetId}/${direction}`, {
         method: 'POST',
-        body: formData
+        headers: withCsrfHeaders(),
+        body: formData,
+        credentials: 'same-origin'
     })
     .then(r => r.json())
     .then(result => {
@@ -1014,7 +1167,7 @@ document.getElementById('media-upload-input').addEventListener('change', functio
 
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('csrf_token', csrfToken);
+    appendCsrf(formData);
 
     const progressDiv = document.getElementById('upload-progress');
     const progressBar = document.getElementById('upload-progress-bar');
@@ -1026,7 +1179,9 @@ document.getElementById('media-upload-input').addEventListener('change', functio
 
     fetch('<?= adminUrl('media/upload') ?>', {
         method: 'POST',
-        body: formData
+        headers: withCsrfHeaders(),
+        body: formData,
+        credentials: 'same-origin'
     })
     .then(r => {
         console.log('Upload response status:', r.status);
