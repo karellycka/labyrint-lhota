@@ -61,20 +61,13 @@ class EventAdminController extends Controller
      */
     public function store(): void
     {
-        error_log("=== EVENT STORE CALLED ===");
-        error_log("POST data: " . print_r($_POST, true));
-
         if (!Session::validateCSRFToken($_POST['csrf_token'] ?? '')) {
-            error_log("CSRF token validation failed");
             Session::flash('error', 'Invalid CSRF token');
             redirect(adminUrl('events/create'));
         }
 
-        error_log("CSRF token validated successfully");
-
         try {
             $this->db->beginTransaction();
-            error_log("Transaction started");
 
             $eventId = $this->eventModel->insert([
                 'slug' => generateSlug($_POST['title_cs'], 'cs'),
@@ -100,14 +93,11 @@ class EventAdminController extends Controller
             }
 
             $this->db->commit();
-            error_log("Event created successfully with ID: {$eventId}");
             Session::flash('success', 'Event created successfully');
             redirect(adminUrl('events'));
 
         } catch (\Exception $e) {
             $this->db->rollBack();
-            error_log("Error creating event: " . $e->getMessage());
-            error_log("Stack trace: " . $e->getTraceAsString());
             Session::flash('error', 'Error: ' . $e->getMessage());
             redirect(adminUrl('events/create'));
         }

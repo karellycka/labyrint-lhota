@@ -3,18 +3,18 @@
  * Tento soubor je AUTOMATICKY GENEROVÁN - NEUPRAVUJTE RUČNĚ!
  * Změny provádějte v Admin panelu (Theme Settings)
  *
- * Vygenerováno: 21.01.2026 06:06:49
+ * Vygenerováno: 26.01.2026 16:48:56
  */
 
 :root {
 
     /* ===== BARVY / COLORS ===== */
     --color-primary: #00792E;
-    --color-secondary: #2C323A;
-    --color-brown: #9C8672;
-    --color-yellow: #D4A574;
-    --color-blue: #8BA5B2;
-    --color-red: #B8664D;
+    --color-secondary: #6B7280;
+    --color-brown: #C9B8A8;
+    --color-yellow: #E8C89D;
+    --color-blue: #B4CBD6;
+    --color-red: #D99580;
     --color-success: #4A7C59;
     --color-error: #B8664D;
     --color-warning: #D4A574;

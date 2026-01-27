@@ -1,0 +1,20 @@
+-- =====================================================
+-- MIGRATION 004: Update Hero Widget Schema
+-- =====================================================
+-- Přejmenování "Hero sekce" na "Hero Fullscreen"
+-- Přidání podpory pro video (external URL + Cloudinary)
+-- =====================================================
+
+UPDATE `widget_types`
+SET
+    `label` = 'Hero Fullscreen',
+    `schema` = '{"fields":[{"key":"title","type":"text","label":"Nadpis","translatable":true,"required":true},{"key":"subtitle","type":"text","label":"Podnadpis","translatable":true,"required":false},{"key":"mediaType","type":"select","label":"Typ média","translatable":false,"required":false,"default":"image","options":[{"value":"image","label":"Fotka (slideshow)"},{"value":"video","label":"Video"}]},{"key":"backgroundImages","type":"image_gallery","label":"Obrázky na pozadí (slideshow)","translatable":false,"required":false,"max":5,"conditional":{"field":"mediaType","value":"image"}},{"key":"videoSource","type":"select","label":"Zdroj videa","translatable":false,"required":false,"default":"external","options":[{"value":"external","label":"External URL (YouTube/Vimeo)"},{"value":"cloudinary","label":"Cloudinary Upload"}],"conditional":{"field":"mediaType","value":"video"}},{"key":"videoUrl","type":"text","label":"URL videa (YouTube/Vimeo embed URL)","translatable":false,"required":false,"placeholder":"https://www.youtube.com/embed/xxxxx","conditional":{"field":"videoSource","value":"external"}},{"key":"cloudinaryVideoId","type":"text","label":"Cloudinary Video ID","translatable":false,"required":false,"placeholder":"sample-video","conditional":{"field":"videoSource","value":"cloudinary"}},{"key":"rotatingText","type":"repeater","label":"Rotující text","translatable":true,"required":false,"min":0,"max":10,"fields":[{"key":"text","type":"text","label":"Text položky","required":true}]},{"key":"ctaButtons","type":"repeater","label":"CTA tlačítka","translatable":true,"required":false,"min":0,"max":3,"fields":[{"key":"text","type":"text","label":"Text tlačítka","required":true},{"key":"url","type":"text","label":"URL odkazu","required":true},{"key":"variant","type":"select","label":"Styl tlačítka","required":true,"options":[{"value":"primary","label":"Primary"},{"value":"secondary","label":"Secondary"},{"value":"outline","label":"Outline"}]}]},{"key":"overlay","type":"checkbox","label":"Tmavý overlay","translatable":false,"required":false,"default":true},{"key":"height","type":"select","label":"Výška sekce","translatable":false,"required":false,"default":"full","options":[{"value":"full","label":"Celá obrazovka"},{"value":"large","label":"Velká"},{"value":"medium","label":"Střední"}]}]}'
+WHERE `type_key` = 'hero';
+
+-- =====================================================
+-- POZNÁMKY:
+-- - Zpětná kompatibilita: existující widgety budou mít
+--   mediaType = "image" (default), takže budou fungovat
+-- - Conditional fields: použito "conditional" property
+--   pro podmíněné zobrazení v admin formuláři
+-- =====================================================

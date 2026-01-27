@@ -119,6 +119,8 @@ class PageAdminController extends Controller
         // Validate required fields
         $slug = trim($_POST['slug'] ?? '');
         $titleCs = trim($_POST['title_cs'] ?? '');
+        $hasEnglishVersion = isset($_POST['has_english_version']);
+        $slugEn = trim($_POST['slug_en'] ?? '');
         $titleEn = trim($_POST['title_en'] ?? '');
 
         if (empty($slug) || empty($titleCs)) {
@@ -132,6 +134,12 @@ class PageAdminController extends Controller
             redirect(adminUrl('pages/create'));
         }
 
+        // Validate slug_en format if provided
+        if ($hasEnglishVersion && !empty($slugEn) && !preg_match('/^[a-z0-9\-]+$/', $slugEn)) {
+            Session::flash('error', 'English slug must contain only lowercase letters, numbers, and hyphens');
+            redirect(adminUrl('pages/create'));
+        }
+
         try {
             $this->db->beginTransaction();
 
@@ -141,13 +149,21 @@ class PageAdminController extends Controller
                 throw new \Exception('Page with this slug already exists');
             }
 
+            // Check if slug_en already exists (if provided)
+            if ($hasEnglishVersion && !empty($slugEn)) {
+                $existingEn = $this->pageModel->query("SELECT id FROM pages WHERE slug_en = ?", [$slugEn]);
+                if (!empty($existingEn)) {
+                    throw new \Exception('Page with this English slug already exists');
+                }
+            }
+
             // Insert page
             $this->pageModel->execute("
-                INSERT INTO pages (slug, template, published)
+                INSERT INTO pages (slug, slug_en, published)
                 VALUES (?, ?, ?)
             ", [
                 $slug,
-                $_POST['template'] ?? 'default',
+                ($hasEnglishVersion && !empty($slugEn)) ? $slugEn : null,
                 isset($_POST['published']) ? 1 : 0
             ]);
 
@@ -155,27 +171,23 @@ class PageAdminController extends Controller
 
             // Insert Czech translation
             $this->pageModel->execute("
-                INSERT INTO page_translations (page_id, language, title, meta_description, meta_keywords, content)
-                VALUES (?, 'cs', ?, ?, ?, ?)
+                INSERT INTO page_translations (page_id, language, title)
+                VALUES (?, 'cs', ?)
             ", [
                 $pageId,
-                $titleCs,
-                $_POST['meta_description'] ?? '',
-                $_POST['meta_keywords'] ?? '',
-                $_POST['content_cs'] ?? ''
+                $titleCs
             ]);
 
-            // Insert English translation
-            $this->pageModel->execute("
-                INSERT INTO page_translations (page_id, language, title, meta_description, meta_keywords, content)
-                VALUES (?, 'en', ?, ?, ?, ?)
-            ", [
-                $pageId,
-                $titleEn ?: $titleCs, // Use Czech title as fallback
-                $_POST['meta_description'] ?? '',
-                $_POST['meta_keywords'] ?? '',
-                $_POST['content_en'] ?? ''
-            ]);
+            // Insert English translation if enabled
+            if ($hasEnglishVersion) {
+                $this->pageModel->execute("
+                    INSERT INTO page_translations (page_id, language, title)
+                    VALUES (?, 'en', ?)
+                ", [
+                    $pageId,
+                    $titleEn ?: $titleCs // Use Czech title as fallback
+                ]);
+            }
 
             $this->db->commit();
 
@@ -200,11 +212,30 @@ class PageAdminController extends Controller
             redirect(adminUrl("pages/{$id}/edit"));
         }
 
+        $hasEnglishVersion = isset($_POST['has_english_version']);
+        $slugEn = trim($_POST['slug_en'] ?? '');
+
+        // Validate slug_en format if provided
+        if ($hasEnglishVersion && !empty($slugEn) && !preg_match('/^[a-z0-9\-]+$/', $slugEn)) {
+            Session::flash('error', 'English slug must contain only lowercase letters, numbers, and hyphens');
+            redirect(adminUrl("pages/{$id}/edit"));
+        }
+
         try {
             $this->db->beginTransaction();
 
-            // Update page metadata
+            // Check if slug_en already exists (if provided and different from current)
+            if ($hasEnglishVersion && !empty($slugEn)) {
+                $existingEn = $this->pageModel->query("SELECT id FROM pages WHERE slug_en = ? AND id != ?", [$slugEn, $id]);
+                if (!empty($existingEn)) {
+                    throw new \Exception('Page with this English slug already exists');
+                }
+            }
+
+            // Update page
             $this->pageModel->update($id, [
+                'slug_en' => ($hasEnglishVersion && !empty($slugEn)) ? $slugEn : null,
+                'published' => isset($_POST['published']) ? 1 : 0,
                 'meta_description' => $_POST['meta_description'] ?? null,
                 'meta_keywords' => $_POST['meta_keywords'] ?? null
             ]);
@@ -212,24 +243,43 @@ class PageAdminController extends Controller
             // Update Czech translation
             $this->pageModel->execute("
                 UPDATE page_translations
-                SET title = ?, content = ?
+                SET title = ?
                 WHERE page_id = ? AND language = 'cs'
             ", [
                 $_POST['title_cs'],
-                $_POST['content_cs'],
                 $id
             ]);
 
-            // Update English translation
-            $this->pageModel->execute("
-                UPDATE page_translations
-                SET title = ?, content = ?
-                WHERE page_id = ? AND language = 'en'
-            ", [
-                $_POST['title_en'],
-                $_POST['content_en'],
-                $id
-            ]);
+            // Update English translation if enabled
+            if ($hasEnglishVersion) {
+                $titleEn = trim($_POST['title_en'] ?? '');
+
+                // Check if English translation exists
+                $existingEn = $this->pageModel->query("
+                    SELECT id FROM page_translations WHERE page_id = ? AND language = 'en'
+                ", [$id]);
+
+                if (!empty($existingEn)) {
+                    // Update existing English translation
+                    $this->pageModel->execute("
+                        UPDATE page_translations
+                        SET title = ?
+                        WHERE page_id = ? AND language = 'en'
+                    ", [
+                        $titleEn,
+                        $id
+                    ]);
+                } else {
+                    // Insert new English translation
+                    $this->pageModel->execute("
+                        INSERT INTO page_translations (page_id, language, title)
+                        VALUES (?, 'en', ?)
+                    ", [
+                        $id,
+                        $titleEn
+                    ]);
+                }
+            }
 
             $this->db->commit();
 

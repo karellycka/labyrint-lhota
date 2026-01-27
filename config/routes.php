@@ -90,23 +90,10 @@ return function (Router $router) {
     $router->post('/admin/media/:id/update', 'Admin/MediaAdminController@update');
     $router->post('/admin/media/:id/delete', 'Admin/MediaAdminController@delete');
 
-    // Admin - Translations (i18n)
-    $router->get('/admin/translations', 'Admin/I18nAdminController@index');
-    $router->get('/admin/translations/:key/edit', 'Admin/I18nAdminController@edit');
-    $router->post('/admin/translations/:key/update', 'Admin/I18nAdminController@update');
-
     // Admin - Contact submissions
     $router->get('/admin/contact', 'Admin/ContactAdminController@index');
     $router->get('/admin/contact/:id/view', 'Admin/ContactAdminController@view');
     $router->post('/admin/contact/:id/mark-read', 'Admin/ContactAdminController@markRead');
-
-    // Admin - Quotes
-    $router->get('/admin/quotes', 'Admin/QuoteAdminController@index');
-    $router->get('/admin/quotes/create', 'Admin/QuoteAdminController@create');
-    $router->post('/admin/quotes/store', 'Admin/QuoteAdminController@store');
-    $router->get('/admin/quotes/:id/edit', 'Admin/QuoteAdminController@edit');
-    $router->post('/admin/quotes/:id/update', 'Admin/QuoteAdminController@update');
-    $router->post('/admin/quotes/:id/delete', 'Admin/QuoteAdminController@delete');
 
     // Admin - Theme Settings
     $router->get('/admin/theme', 'Admin/ThemeController@index');

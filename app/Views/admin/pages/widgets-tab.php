@@ -323,6 +323,32 @@ window.editWidget = function(widgetId) {
         });
 }
 
+// Update visibility of conditional fields
+function updateConditionalFields(container, controllingFieldKey, controllingValue, isCheckbox = false) {
+    const conditionalGroups = container.querySelectorAll('[data-conditional-field="' + controllingFieldKey + '"]');
+
+    conditionalGroups.forEach(group => {
+        const requiredValue = group.dataset.conditionalValue;
+
+        // Check if the controlling field's value matches the required value
+        const shouldShow = (controllingValue == requiredValue);
+
+        group.style.display = shouldShow ? 'block' : 'none';
+
+        // If hiding, clear the input values to prevent saving invalid data
+        if (!shouldShow) {
+            const inputs = group.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                if (input.type === 'checkbox') {
+                    input.checked = false;
+                } else {
+                    input.value = '';
+                }
+            });
+        }
+    });
+}
+
 // Build dynamic form from schema
 function buildWidgetForm(schema, data, language) {
     console.log(`buildWidgetForm called for language: ${language}`);
@@ -348,6 +374,13 @@ function buildWidgetForm(schema, data, language) {
     schema.fields.forEach(field => {
         const formGroup = document.createElement('div');
         formGroup.className = 'form-group';
+
+        // Handle conditional fields
+        if (field.conditional) {
+            formGroup.dataset.conditionalField = field.conditional.field;
+            formGroup.dataset.conditionalValue = field.conditional.value;
+            formGroup.style.display = 'none'; // Initially hidden
+        }
 
         const label = document.createElement('label');
         label.textContent = field.label + (field.required ? ' *' : '');
@@ -429,12 +462,26 @@ function buildWidgetForm(schema, data, language) {
         input.dataset.fieldKey = field.key;
         if (field.required) input.required = true;
 
+        // Add change listener for fields that control conditional visibility
+        input.addEventListener('change', function() {
+            updateConditionalFields(container, field.key, this.value, this.type === 'checkbox' ? this.checked : null);
+        });
+
         formGroup.appendChild(input);
         container.appendChild(formGroup);
     });
 
     console.log(`Form built for ${language}, container has ${container.children.length} elements`);
     console.log('Container HTML:', container.innerHTML.substring(0, 500));
+
+    // Initialize conditional field visibility based on current values
+    schema.fields.forEach(field => {
+        const input = container.querySelector(`[data-field-key="${field.key}"]`);
+        if (input) {
+            const value = input.type === 'checkbox' ? input.checked : input.value;
+            updateConditionalFields(container, field.key, value);
+        }
+    });
 }
 
 // Build repeater field (array of items with subfields)

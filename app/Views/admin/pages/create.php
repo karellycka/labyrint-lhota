@@ -7,73 +7,58 @@
     <form method="POST" action="<?= adminUrl('pages/store') ?>" class="admin-form">
         <?= csrfField() ?>
 
-        <div class="form-tabs">
-            <button type="button" class="tab-btn active" data-tab="basic">Základní nastavení</button>
-            <button type="button" class="tab-btn" data-tab="cs">Čeština (CS)</button>
-            <button type="button" class="tab-btn" data-tab="en">Angličtina (EN)</button>
+        <h2 class="section-title">Základní nastavení</h2>
+
+        <div class="form-group">
+            <label for="title_cs">Název stránky (Česky) *</label>
+            <input type="text" id="title_cs" name="title_cs" required
+                   value="<?= old('title_cs') ?>"
+                   class="form-control" placeholder="Naše vize">
         </div>
 
-        <!-- Basic Settings Tab -->
-        <div class="tab-content active" id="tab-basic">
-            <div class="form-group">
-                <label for="slug">Slug (URL) *</label>
-                <input type="text" id="slug" name="slug" required
-                       value="<?= old('slug') ?>"
-                       class="form-control" placeholder="nase-vize"
-                       pattern="[a-z0-9\-]+"
-                       title="Pouze malá písmena, čísla a pomlčky">
-                <small>URL adresa stránky (např. "nase-vize" → /cs/nase-vize). Použijte pouze malá písmena, čísla a pomlčky.</small>
-            </div>
-
-            <div class="form-group">
-                <label for="template">Šablona</label>
-                <select id="template" name="template" class="form-control">
-                    <option value="default" selected>Widgetová stránka (page builder)</option>
-                    <option value="custom">Vlastní šablona (custom PHP)</option>
-                </select>
-                <small>Widgetová stránka umožňuje skládat obsah z widgetů v administraci</small>
-            </div>
-
-            <div class="form-group">
-                <label for="published">
-                    <input type="checkbox" id="published" name="published" value="1" checked>
-                    Publikováno
-                </label>
-                <small>Zaškrtněte pro okamžité zveřejnění stránky</small>
-            </div>
+        <div class="form-group">
+            <label for="slug">Slug (URL) *</label>
+            <input type="text" id="slug" name="slug" required
+                   value="<?= old('slug') ?>"
+                   class="form-control" placeholder="nase-vize"
+                   pattern="[a-z0-9\-]+"
+                   title="Pouze malá písmena, čísla a pomlčky">
+            <small>URL adresa stránky (např. "nase-vize" → /cs/nase-vize). Použijte pouze malá písmena, čísla a pomlčky.</small>
         </div>
 
-        <!-- Czech Tab -->
-        <div class="tab-content" id="tab-cs">
-            <div class="form-group">
-                <label for="title_cs">Název stránky (Česky) *</label>
-                <input type="text" id="title_cs" name="title_cs" required
-                       value="<?= old('title_cs') ?>"
-                       class="form-control" placeholder="Naše vize">
-            </div>
-
-            <div class="form-group">
-                <label for="content_cs">Obsah (Česky)</label>
-                <textarea id="content_cs" name="content_cs" rows="10" class="form-control editor"><?= old('content_cs') ?></textarea>
-                <small>Pro widgetovou stránku bude obsah složen z widgetů (toto pole můžete nechat prázdné)</small>
-            </div>
+        <div class="form-group">
+            <label for="has_english_version">
+                <input type="checkbox" id="has_english_version" name="has_english_version" value="1" <?= old('has_english_version') ? 'checked' : '' ?>>
+                Vytvořit stránku v angličtině
+            </label>
+            <small>Zaškrtněte pro vytvoření anglické verze stránky</small>
         </div>
 
-        <!-- English Tab -->
-        <div class="tab-content" id="tab-en">
+        <div id="english-fields" style="display: none;">
             <div class="form-group">
-                <label for="title_en">Page Title (English)</label>
+                <label for="title_en">Název stránky (Anglicky)</label>
                 <input type="text" id="title_en" name="title_en"
                        value="<?= old('title_en') ?>"
                        class="form-control" placeholder="Our Vision">
-                <small>Pokud nevyplníte, použije se český název</small>
             </div>
 
             <div class="form-group">
-                <label for="content_en">Content (English)</label>
-                <textarea id="content_en" name="content_en" rows="10" class="form-control editor"><?= old('content_en') ?></textarea>
-                <small>For widget pages, content will be composed of widgets</small>
+                <label for="slug_en">Slug EN (URL)</label>
+                <input type="text" id="slug_en" name="slug_en"
+                       value="<?= old('slug_en') ?>"
+                       class="form-control" placeholder="our-vision"
+                       pattern="[a-z0-9\-]+"
+                       title="Pouze malá písmena, čísla a pomlčky">
+                <small>URL adresa anglické stránky (např. "our-vision" → /en/our-vision)</small>
             </div>
+        </div>
+
+        <div class="form-group">
+            <label for="published">
+                <input type="checkbox" id="published" name="published" value="1" checked>
+                Publikováno
+            </label>
+            <small>Zaškrtněte pro okamžité zveřejnění stránky</small>
         </div>
 
         <div class="form-actions">
@@ -84,22 +69,24 @@
 </div>
 
 <script>
-// Tab switching
-document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const targetTab = this.dataset.tab;
+// Show/hide English fields based on checkbox
+const hasEnglishCheckbox = document.getElementById('has_english_version');
+const englishFields = document.getElementById('english-fields');
 
-        // Remove active from all tabs
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+function toggleEnglishFields() {
+    if (hasEnglishCheckbox.checked) {
+        englishFields.style.display = 'block';
+    } else {
+        englishFields.style.display = 'none';
+    }
+}
 
-        // Add active to clicked tab
-        this.classList.add('active');
-        document.getElementById('tab-' + targetTab).classList.add('active');
-    });
-});
+// Initial state
+toggleEnglishFields();
 
-// Auto-generate slug from Czech title
+hasEnglishCheckbox.addEventListener('change', toggleEnglishFields);
+
+// Auto-generate slug CS from Czech title
 const titleCs = document.getElementById('title_cs');
 const slugInput = document.getElementById('slug');
 
@@ -119,6 +106,29 @@ titleCs.addEventListener('input', function() {
 });
 
 slugInput.addEventListener('input', function() {
+    this.dataset.autoGenerated = 'false';
+});
+
+// Auto-generate slug EN from English title
+const titleEn = document.getElementById('title_en');
+const slugEnInput = document.getElementById('slug_en');
+
+titleEn.addEventListener('input', function() {
+    if (!slugEnInput.value || slugEnInput.dataset.autoGenerated === 'true') {
+        const slug = this.value
+            .toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+            .replace(/[^a-z0-9\s\-]/g, '') // Remove special chars
+            .trim()
+            .replace(/\s+/g, '-') // Spaces to hyphens
+            .replace(/-+/g, '-'); // Multiple hyphens to single
+
+        slugEnInput.value = slug;
+        slugEnInput.dataset.autoGenerated = 'true';
+    }
+});
+
+slugEnInput.addEventListener('input', function() {
     this.dataset.autoGenerated = 'false';
 });
 </script>
@@ -150,41 +160,13 @@ slugInput.addEventListener('input', function() {
     max-width: 800px;
 }
 
-.form-tabs {
-    display: flex;
-    gap: 10px;
-    border-bottom: 2px solid #e1e8ed;
-    margin-bottom: 30px;
-}
-
-.tab-btn {
-    background: none;
-    border: none;
-    padding: 12px 24px;
-    font-size: 15px;
+.section-title {
+    font-size: 20px;
     font-weight: 600;
-    color: #666;
-    cursor: pointer;
-    border-bottom: 3px solid transparent;
-    transition: all 0.3s;
-}
-
-.tab-btn:hover {
     color: #333;
-    background: #f8f9fa;
-}
-
-.tab-btn.active {
-    color: var(--color-primary, #00792E);
-    border-bottom-color: var(--color-primary, #00792E);
-}
-
-.tab-content {
-    display: none;
-}
-
-.tab-content.active {
-    display: block;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e1e8ed;
 }
 
 .form-group {

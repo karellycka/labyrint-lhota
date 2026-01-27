@@ -276,6 +276,55 @@ if (strpos($requestUri, '/admin') === 0) {
         exit;
     }
 
+    // Theme Settings - Index
+    if ($requestUri === '/admin/theme') {
+        $controller = new \App\Controllers\Admin\ThemeController();
+        $controller->index();
+        exit;
+    }
+
+    // Theme Settings - Update
+    if ($requestUri === '/admin/theme/update' && $method === 'POST') {
+        $controller = new \App\Controllers\Admin\ThemeController();
+        $controller->update();
+        exit;
+    }
+
+    // Theme Settings - Regenerate CSS
+    if ($requestUri === '/admin/theme/regenerate' && $method === 'POST') {
+        $controller = new \App\Controllers\Admin\ThemeController();
+        $controller->regenerateCSS();
+        exit;
+    }
+
+    // Theme Settings - Export
+    if ($requestUri === '/admin/theme/export' && $method === 'GET') {
+        $controller = new \App\Controllers\Admin\ThemeController();
+        $controller->export();
+        exit;
+    }
+
+    // Theme Settings - Import
+    if ($requestUri === '/admin/theme/import' && $method === 'POST') {
+        $controller = new \App\Controllers\Admin\ThemeController();
+        $controller->import();
+        exit;
+    }
+
+    // Theme Settings - Preview
+    if ($requestUri === '/admin/theme/preview' && $method === 'GET') {
+        $controller = new \App\Controllers\Admin\ThemeController();
+        $controller->preview();
+        exit;
+    }
+
+    // Theme Settings - Get Setting (AJAX)
+    if ($requestUri === '/admin/theme/setting' && $method === 'GET') {
+        $controller = new \App\Controllers\Admin\ThemeController();
+        $controller->getSetting();
+        exit;
+    }
+
     // For any other /admin/* routes that aren't handled above, show 404
     http_response_code(404);
     if ($method === 'GET') {

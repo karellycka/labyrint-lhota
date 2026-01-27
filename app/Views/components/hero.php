@@ -1,28 +1,37 @@
 <?php
 /**
  * Hero Component
- * Velká uvítací sekce s pozadím a textem
+ * Velká uvítací sekce s pozadím (slideshow nebo video) a textem
  *
  * Props:
  * - $title (string) - Hlavní nadpis
  * - $subtitle (string) - Podnadpis
- * - $backgroundImages (array) - Pole URL obrázků pro slideshow (pokud není zadáno, použijí se výchozí)
+ * - $mediaType (string) - Typ média: 'image' nebo 'video' (default: 'image')
+ * - $backgroundImages (array) - Pole URL obrázků pro slideshow (pouze pro mediaType=image)
+ * - $videoSource (string) - Zdroj videa: 'external' nebo 'cloudinary' (pouze pro mediaType=video)
+ * - $videoUrl (string) - URL videa z YouTube/Vimeo (pouze pro videoSource=external)
+ * - $cloudinaryVideoId (string) - Cloudinary video ID (pouze pro videoSource=cloudinary)
  * - $rotatingText (array) - Pole textů pro rotaci (stringy nebo objekty s 'text' property)
  * - $ctaButtons (array) - Pole tlačítek [['text' => '', 'url' => '', 'variant' => '']]
- * - $overlay (bool) - Tmavý overlay přes obrázek (default: true)
+ * - $overlay (bool) - Tmavý overlay přes obrázek/video (default: true)
  * - $height (string) - Výška (sm, md, lg, full) (default: lg)
  */
 
+$mediaType = $mediaType ?? 'image';
 $overlay = $overlay ?? true;
 $height = $height ?? 'lg';
 $rotatingText = $rotatingText ?? [];
 $ctaButtons = $ctaButtons ?? [];
 $backgroundImages = $backgroundImages ?? [];
+$videoSource = $videoSource ?? 'external';
+$videoUrl = $videoUrl ?? '';
+$cloudinaryVideoId = $cloudinaryVideoId ?? '';
 
 $overlayClass = $overlay ? 'hero-overlay' : '';
 $heightClass = "hero-{$height}";
+$mediaClass = $mediaType === 'video' ? 'hero-video' : 'hero-slideshow';
 
-// Default fallback images if none uploaded
+// Default fallback images if none uploaded (only for image type)
 $defaultImages = [
     'images/hero/slide-1.jpg',
     'images/hero/slide-2.jpg',
@@ -35,18 +44,46 @@ $defaultImages = [
 $imagesToUse = !empty($backgroundImages) ? $backgroundImages : $defaultImages;
 ?>
 
-<section class="hero hero-slideshow <?= $heightClass ?> <?= $overlayClass ?>">
-    <div class="hero-slideshow-container">
-        <?php foreach ($imagesToUse as $index => $imageUrl): ?>
-            <?php
-            // If it's a full URL (Cloudinary), use directly
-            // Otherwise, use asset() helper for local assets
-            $imageUrl = str_starts_with($imageUrl, 'http') ? $imageUrl : asset($imageUrl);
-            ?>
-            <div class="hero-slide <?= $index === 0 ? 'active' : '' ?>"
-                 style="background-image: url('<?= e($imageUrl) ?>')"></div>
-        <?php endforeach; ?>
-    </div>
+<section class="hero <?= $mediaClass ?> <?= $heightClass ?> <?= $overlayClass ?>">
+    <?php if ($mediaType === 'video'): ?>
+        <!-- VIDEO BACKGROUND -->
+        <div class="hero-video-container">
+            <?php if ($videoSource === 'external' && !empty($videoUrl)): ?>
+                <!-- External video (YouTube/Vimeo) -->
+                <iframe
+                    class="hero-video-iframe"
+                    src="<?= e($videoUrl) ?>?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1"
+                    frameborder="0"
+                    allow="autoplay; fullscreen; picture-in-picture"
+                    allowfullscreen>
+                </iframe>
+            <?php elseif ($videoSource === 'cloudinary' && !empty($cloudinaryVideoId)): ?>
+                <!-- Cloudinary video -->
+                <video
+                    class="hero-video-element"
+                    autoplay
+                    muted
+                    loop
+                    playsinline>
+                    <source src="https://res.cloudinary.com/<?= CLOUDINARY_CLOUD_NAME ?>/video/upload/<?= e($cloudinaryVideoId) ?>.mp4" type="video/mp4">
+                    <source src="https://res.cloudinary.com/<?= CLOUDINARY_CLOUD_NAME ?>/video/upload/<?= e($cloudinaryVideoId) ?>.webm" type="video/webm">
+                </video>
+            <?php endif; ?>
+        </div>
+    <?php else: ?>
+        <!-- IMAGE SLIDESHOW -->
+        <div class="hero-slideshow-container">
+            <?php foreach ($imagesToUse as $index => $imageUrl): ?>
+                <?php
+                // If it's a full URL (Cloudinary), use directly
+                // Otherwise, use asset() helper for local assets
+                $imageUrl = str_starts_with($imageUrl, 'http') ? $imageUrl : asset($imageUrl);
+                ?>
+                <div class="hero-slide <?= $index === 0 ? 'active' : '' ?>"
+                     style="background-image: url('<?= e($imageUrl) ?>')"></div>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
 
     <?php if ($overlay): ?>
         <div class="hero-overlay-layer"></div>

@@ -6,7 +6,6 @@ use App\Core\Controller;
 use App\Models\Page;
 use App\Models\PageWidget;
 use App\Models\Blog;
-use App\Models\Quote;
 
 /**
  * Home Controller - Homepage with widget support
@@ -36,19 +35,12 @@ class HomeController extends Controller
         $blogModel = new Blog();
         $recentPosts = $blogModel->getRecent($language, 3);
 
-        // Get active quote (for fallback)
-        $quoteModel = new Quote();
-        $quote = $quoteModel->getActive($language);
-
-        // Use dynamic template if widgets exist, otherwise fallback to old home.php
-        $viewTemplate = !empty($widgets) ? 'pages/dynamic' : 'pages/home';
-
-        $this->view($viewTemplate, [
+        // Always use dynamic template (widget-based)
+        $this->view('pages/dynamic', [
             'title' => $page->title ?? 'Škola Labyrint',
             'page' => $page,
             'widgets' => $widgets,
             'recentPosts' => $recentPosts,
-            'quote' => $quote,
             'metaDescription' => $page->meta_description ?? ''
         ]);
     }

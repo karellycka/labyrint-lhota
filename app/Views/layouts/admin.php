@@ -34,8 +34,6 @@
                     <li><a href="<?= adminUrl('pages') ?>" class="<?= isActiveRoute('/admin/pages') ? 'active' : '' ?>">Pages</a></li>
                     <li><a href="<?= adminUrl('events') ?>" class="<?= isActiveRoute('/admin/events') ? 'active' : '' ?>">Events</a></li>
                     <li><a href="<?= adminUrl('media') ?>" class="<?= isActiveRoute('/admin/media') ? 'active' : '' ?>">Media</a></li>
-                    <li><a href="<?= adminUrl('translations') ?>" class="<?= isActiveRoute('/admin/translations') ? 'active' : '' ?>">Translations</a></li>
-                    <li><a href="<?= adminUrl('quotes') ?>" class="<?= isActiveRoute('/admin/quotes') ? 'active' : '' ?>">Quotes</a></li>
                     <li><a href="<?= adminUrl('contact') ?>" class="<?= isActiveRoute('/admin/contact') ? 'active' : '' ?>">Contact</a></li>
                     <li><a href="<?= adminUrl('theme') ?>" class="<?= isActiveRoute('/admin/theme') ? 'active' : '' ?>">Theme</a></li>
                 </ul>
@@ -65,12 +63,6 @@
             </a></li>
             <li><a href="<?= adminUrl('media') ?>">
                 <span class="icon">🖼️</span> Media Library
-            </a></li>
-            <li><a href="<?= adminUrl('translations') ?>">
-                <span class="icon">🌐</span> Translations
-            </a></li>
-            <li><a href="<?= adminUrl('quotes') ?>">
-                <span class="icon">💬</span> Quotes
             </a></li>
             <li><a href="<?= adminUrl('contact') ?>">
                 <span class="icon">✉️</span> Contact Messages
