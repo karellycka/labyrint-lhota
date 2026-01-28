@@ -33,11 +33,13 @@ $backgroundImageUrl = isset($backgroundImage)
         <div class="container">
             <h2 class="cta-banner-title"><?= e($title) ?></h2>
             <h3 class="cta-banner-subtitle"><?= e($subtitle) ?></h3>
+            <?php if (!empty($buttonText)): ?>
             <div class="cta-banner-action">
                 <a href="<?= e($buttonUrl) ?>" class="btn btn-<?= e($buttonVariant) ?>">
                     <?= e($buttonText) ?>
                 </a>
             </div>
+            <?php endif; ?>
         </div>
     </div>
 </section>

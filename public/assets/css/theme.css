@@ -3,7 +3,7 @@
  * Tento soubor je AUTOMATICKY GENEROVÁN - NEUPRAVUJTE RUČNĚ!
  * Změny provádějte v Admin panelu (Theme Settings)
  *
- * Vygenerováno: 26.01.2026 16:48:56
+ * Vygenerováno: 27.01.2026 22:17:49
  */
 
 :root {
@@ -15,9 +15,6 @@
     --color-yellow: #E8C89D;
     --color-blue: #B4CBD6;
     --color-red: #D99580;
-    --color-green: #A7C7B1;
-    --color-red-alt: #D3A08F;
-    --color-teal: #9EC4C0;
     --color-success: #4A7C59;
     --color-error: #B8664D;
     --color-warning: #D4A574;
@@ -33,6 +30,14 @@
     --color-border-dark: #9CA3AF;
     --color-overlay-dark: rgba(44, 50, 58, 0.6);
     --color-overlay-light: rgba(255, 255, 255, 0.9);
+    --color-green: #A7C7B1;
+    --color-red-alt: #D3A08F;
+    --color-teal: #9EC4C0;
+    --color-moss: #87A878;
+    --color-fjord-dark: #6B8FA3;
+    --color-raspberry: #C2727E;
+    --color-sage-dark: #849E8F;
+    --color-lavender: #B8A9C4;
 
     /* ===== TYPOGRAFIE / TYPOGRAPHY ===== */
     --font-family-base: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;

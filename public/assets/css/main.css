@@ -581,9 +581,23 @@ body.no-hero-fullscreen .site-content {
 .feature-card-with-image .feature-card-tag {
     padding: 6px 12px;
     border-radius: var(--border-radius-full, 9999px);
-    font-size: var(--font-size-xs, 12px);
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 700;
     color: var(--color-text, #2C323A);
+}
+
+.feature-card-with-image .feature-card-image {
+    width: 100%;
+    height: 250px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.feature-card-with-image .feature-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 /* ===== TWO COLUMN LAYOUT ===== */
@@ -637,12 +651,12 @@ body.no-hero-fullscreen .site-content {
 
 
 .image-text-section .container {
-    padding-left: 0;
-    padding-right: 0;
+    padding-left: 20px;
+    padding-right: 20px;
     margin-top: 80px;
     margin-bottom: 80px;
-    margin-left: 20px;
-    margin-right: 20px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .image-text-section .image-text-layout {

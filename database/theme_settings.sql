@@ -34,6 +34,13 @@ INSERT INTO theme_settings (setting_key, setting_value, category, type, label, d
 ('color_red_alt', '#D3A08F', 'colors', 'color', 'Červená (koralová)', 'Jemnější korálový odstín červené'),
 ('color_teal', '#9EC4C0', 'colors', 'color', 'Modrozelená', 'Tichá modrozelená v hygge paletě'),
 
+-- Nové rozšířené hygge barvy (2026)
+('color_moss', '#87A878', 'colors', 'color', 'Zelená (mechová)', 'Teplá mechová/lesní zelená'),
+('color_fjord_dark', '#6B8FA3', 'colors', 'color', 'Modrá (fjordová tmavá)', 'Hlubší modrozelená jako hluboký fjord'),
+('color_raspberry', '#C2727E', 'colors', 'color', 'Růžová (malinová)', 'Růžovo-červená malinová'),
+('color_sage_dark', '#849E8F', 'colors', 'color', 'Zelená (šedozelená)', 'Tlumená šalvějová zelená'),
+('color_lavender', '#B8A9C4', 'colors', 'color', 'Levandulová', 'Jemná levandulová fialová'),
+
 -- Sémantické barvy
 ('color_success', '#4A7C59', 'colors', 'color', 'Success (úspěch)', 'Barva pro pozitivní zprávy a úspěšné akce'),
 ('color_error', '#B8664D', 'colors', 'color', 'Error (chyba)', 'Barva pro chybové hlášky'),
