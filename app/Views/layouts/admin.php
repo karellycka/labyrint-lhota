@@ -40,6 +40,9 @@
             </nav>
 
             <div class="admin-user">
+                <span class="db-info" style="margin-right: 12px; font-size: 12px; color: #aaa;">
+                    DB: <?= e(dbConnectionLabel()) ?>
+                </span>
                 <span class="user-name"><?= e(\App\Core\Session::get('username', 'Admin')) ?></span>
                 <a href="<?= adminUrl('logout') ?>" class="btn-logout">Logout</a>
             </div>

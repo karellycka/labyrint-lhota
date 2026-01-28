@@ -27,7 +27,9 @@ class Session
                 'cookie_lifetime' => $timeout,
                 'cookie_httponly' => true,
                 'cookie_secure' => self::isHttps(),
-                'cookie_samesite' => 'Strict',
+                'cookie_samesite' => 'Lax', // Changed from 'Strict' - allows cookies on navigation
+                'cookie_domain' => '', // Empty = current domain only (Railway-safe)
+                'cookie_path' => '/', // Explicitly set to root
                 'use_strict_mode' => true,
                 'use_only_cookies' => true,
                 'sid_length' => 48,
@@ -73,8 +75,9 @@ class Session
     public static function checkTimeout(): bool
     {
         if (isset($_SESSION['last_activity'])) {
-            if (time() - $_SESSION['last_activity'] > self::getTimeout()) {
-                self::destroy();
+            $inactiveTime = time() - $_SESSION['last_activity'];
+            if ($inactiveTime > self::getTimeout()) {
+                self::destroy('timeout - inactive for ' . $inactiveTime . 's');
                 return false;
             }
         }
@@ -90,19 +93,32 @@ class Session
 
     private static function isHttps(): bool
     {
+        $isHttps = false;
+        $reason = 'none';
+
         if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
-            return true;
+            $isHttps = true;
+            $reason = 'HTTPS=' . $_SERVER['HTTPS'];
+        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+            $proto = strtolower((string)$_SERVER['HTTP_X_FORWARDED_PROTO']);
+            $isHttps = $proto === 'https';
+            $reason = 'X-Forwarded-Proto=' . $proto;
+        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_SSL'])) {
+            $ssl = strtolower((string)$_SERVER['HTTP_X_FORWARDED_SSL']);
+            $isHttps = $ssl === 'on';
+            $reason = 'X-Forwarded-SSL=' . $ssl;
+        } elseif (!empty($_SERVER['REQUEST_SCHEME'])) {
+            $scheme = strtolower((string)$_SERVER['REQUEST_SCHEME']);
+            $isHttps = $scheme === 'https';
+            $reason = 'REQUEST_SCHEME=' . $scheme;
         }
-        if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
-            return strtolower((string)$_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https';
+
+        // Log HTTPS detection for debugging
+        if (defined('ENVIRONMENT') && ENVIRONMENT === 'production') {
+            error_log(sprintf('Session HTTPS detection: %s (reason: %s)', $isHttps ? 'YES' : 'NO', $reason));
         }
-        if (!empty($_SERVER['HTTP_X_FORWARDED_SSL'])) {
-            return strtolower((string)$_SERVER['HTTP_X_FORWARDED_SSL']) === 'on';
-        }
-        if (!empty($_SERVER['REQUEST_SCHEME'])) {
-            return strtolower((string)$_SERVER['REQUEST_SCHEME']) === 'https';
-        }
-        return false;
+
+        return $isHttps;
     }
 
     /**
@@ -114,18 +130,22 @@ class Session
             return true; // First request, OK
         }
 
-        // Check user agent (skip if header is missing to avoid false logouts)
-        $currentUserAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
-        if ($currentUserAgent !== '' && $_SESSION['user_agent'] !== $currentUserAgent) {
-            self::destroy();
-            return false;
-        }
+        // User Agent validation DISABLED - too brittle in production
+        // Browsers/proxies can change UA strings between requests causing false logouts
+        // Railway load balancer may modify headers
+        // Security trade-off: UA check provides minimal security benefit vs. high false positive rate
 
-        // Optional: Strict IP check (can cause issues with mobile networks)
-        // if ($_SESSION['ip_address'] !== ($_SERVER['REMOTE_ADDR'] ?? '')) {
-        //     self::destroy();
-        //     return false;
-        // }
+        // IP check DISABLED - causes issues with:
+        // - Mobile networks (IP changes when switching towers)
+        // - VPN reconnections
+        // - Load balancer IP forwarding inconsistencies
+
+        // Note: Session hijacking is mitigated by:
+        // - HTTPS only (cookie_secure=true)
+        // - HttpOnly cookies (no JS access)
+        // - SameSite=Lax (CSRF protection)
+        // - Long random session IDs (48 chars, 6 bits/char = 288 bits entropy)
+        // - Database-backed sessions with last_activity tracking
 
         return true;
     }
@@ -189,8 +209,19 @@ class Session
     /**
      * Destroy session
      */
-    public static function destroy(): void
+    public static function destroy(string $reason = 'manual'): void
     {
+        // Log session destruction for debugging
+        if (defined('ENVIRONMENT') && ENVIRONMENT === 'production') {
+            error_log(sprintf(
+                'Session destroyed - Reason: %s | User: %s | IP: %s | UA: %s',
+                $reason,
+                $_SESSION['username'] ?? $_SESSION['user_id'] ?? 'unknown',
+                $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+                substr($_SERVER['HTTP_USER_AGENT'] ?? 'unknown', 0, 100)
+            ));
+        }
+
         session_unset();
         session_destroy();
     }

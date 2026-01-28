@@ -83,6 +83,25 @@ function adminUrl(string $path = ''): string
 }
 
 /**
+ * Get a short label of the current DB connection (host/db)
+ */
+function dbConnectionLabel(): string
+{
+    $config = require CONFIG_PATH . '/database.php';
+    $host = $config['host'] ?? 'unknown-host';
+    $db = $config['database'] ?? 'unknown-db';
+    $port = (int)($config['port'] ?? 0);
+
+    $label = $host;
+    if ($port && $port !== 3306) {
+        $label .= ':' . $port;
+    }
+    $label .= '/' . $db;
+
+    return $label;
+}
+
+/**
  * Redirect to URL
  */
 function redirect(string $url, ?string $message = null): void

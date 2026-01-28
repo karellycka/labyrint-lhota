@@ -14,6 +14,14 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Configure PHP error logging to stderr (visible in Railway logs)
+RUN { \
+    echo 'error_log = /dev/stderr'; \
+    echo 'log_errors = On'; \
+    echo 'display_errors = Off'; \
+    echo 'error_reporting = E_ALL'; \
+} > /usr/local/etc/php/conf.d/error-logging.ini
+
 # Enable required Apache modules (MPM is already configured in base image)
 RUN a2enmod rewrite
 
