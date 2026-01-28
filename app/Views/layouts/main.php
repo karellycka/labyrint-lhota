@@ -176,6 +176,7 @@ $bodyClass = $hasFullscreenHero ? 'has-hero-fullscreen' : 'no-hero-fullscreen';
 
     <!-- JavaScript -->
     <script src="<?= asset('js/hero-slideshow.js') ?>"></script>
+    <script src="<?= asset('js/hero-video.js') ?>"></script>
     <script src="<?= asset('js/text-rotator.js') ?>"></script>
     <script src="<?= asset('js/mobile-menu.js') ?>"></script>
     <script src="<?= asset('js/main.js') ?>"></script>
