@@ -267,6 +267,17 @@ CREATE TABLE `cache` (
     INDEX `idx_expires` (`expires_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- =====================================================
+-- SESSIONS TABLE (DB-backed PHP sessions)
+-- =====================================================
+DROP TABLE IF EXISTS `sessions`;
+CREATE TABLE `sessions` (
+    `id` VARCHAR(128) NOT NULL PRIMARY KEY,
+    `data` MEDIUMBLOB NOT NULL,
+    `last_activity` INT UNSIGNED NOT NULL,
+    INDEX `idx_last_activity` (`last_activity`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- =====================================================

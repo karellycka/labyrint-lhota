@@ -7,7 +7,7 @@ namespace App\Core;
  */
 class Session
 {
-    private const TIMEOUT = 31536000; // 365 dní (pro localhost development)
+    private const DEFAULT_TIMEOUT = 31536000; // 365 dni
 
     /**
      * Start session with security settings
@@ -15,10 +15,18 @@ class Session
     public static function start(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
+            $timeout = self::getTimeout();
+            ini_set('session.gc_maxlifetime', (string)$timeout);
+            ini_set('session.cookie_lifetime', (string)$timeout);
+
+            $db = Database::getInstance();
+            $handler = new DbSessionHandler($db->getPDO(), $timeout);
+            session_set_save_handler($handler, true);
+
             session_start([
-                'cookie_lifetime' => self::TIMEOUT,
+                'cookie_lifetime' => $timeout,
                 'cookie_httponly' => true,
-                'cookie_secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on',
+                'cookie_secure' => self::isHttps(),
                 'cookie_samesite' => 'Strict',
                 'use_strict_mode' => true,
                 'use_only_cookies' => true,
@@ -65,7 +73,7 @@ class Session
     public static function checkTimeout(): bool
     {
         if (isset($_SESSION['last_activity'])) {
-            if (time() - $_SESSION['last_activity'] > self::TIMEOUT) {
+            if (time() - $_SESSION['last_activity'] > self::getTimeout()) {
                 self::destroy();
                 return false;
             }
@@ -73,6 +81,28 @@ class Session
 
         $_SESSION['last_activity'] = time();
         return true;
+    }
+
+    private static function getTimeout(): int
+    {
+        return defined('SESSION_TIMEOUT') ? (int)SESSION_TIMEOUT : self::DEFAULT_TIMEOUT;
+    }
+
+    private static function isHttps(): bool
+    {
+        if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+            return true;
+        }
+        if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+            return strtolower((string)$_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https';
+        }
+        if (!empty($_SERVER['HTTP_X_FORWARDED_SSL'])) {
+            return strtolower((string)$_SERVER['HTTP_X_FORWARDED_SSL']) === 'on';
+        }
+        if (!empty($_SERVER['REQUEST_SCHEME'])) {
+            return strtolower((string)$_SERVER['REQUEST_SCHEME']) === 'https';
+        }
+        return false;
     }
 
     /**
@@ -84,8 +114,9 @@ class Session
             return true; // First request, OK
         }
 
-        // Check user agent
-        if ($_SESSION['user_agent'] !== ($_SERVER['HTTP_USER_AGENT'] ?? '')) {
+        // Check user agent (skip if header is missing to avoid false logouts)
+        $currentUserAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+        if ($currentUserAgent !== '' && $_SESSION['user_agent'] !== $currentUserAgent) {
             self::destroy();
             return false;
         }
