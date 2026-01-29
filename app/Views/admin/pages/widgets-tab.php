@@ -1108,7 +1108,9 @@ function loadMediaLibrary() {
     const grid = document.getElementById('media-library-grid');
     grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #999;"><p>Načítání médií...</p></div>';
 
-    fetch('<?= adminUrl('media/api/all') ?>')
+    fetch('<?= adminUrl('media/api/all') ?>', {
+        credentials: 'same-origin'
+    })
         .then(r => r.json())
         .then(data => {
             if (!data.media || data.media.length === 0) {
