@@ -250,26 +250,6 @@ if (strpos($requestUri, '/admin') === 0) {
         exit;
     }
 
-    // Debug Config (temporary - remove after fixing)
-    if ($requestUri === '/admin/debug-config' && $method === 'GET') {
-        header('Content-Type: application/json');
-        $config = [
-            'environment' => ENVIRONMENT,
-            'base_url' => BASE_URL,
-            'session_started' => session_status() === PHP_SESSION_ACTIVE,
-            'session_id' => session_id(),
-            'is_logged_in' => Session::isLoggedIn(),
-            'user_id' => Session::get('user_id'),
-            'cloudinary' => [
-                'cloud_name_set' => !empty(getenv('CLOUDINARY_CLOUD_NAME') ?: $_ENV['CLOUDINARY_CLOUD_NAME'] ?? ''),
-                'api_key_set' => !empty(getenv('CLOUDINARY_API_KEY') ?: $_ENV['CLOUDINARY_API_KEY'] ?? ''),
-                'api_secret_set' => !empty(getenv('CLOUDINARY_API_SECRET') ?: $_ENV['CLOUDINARY_API_SECRET'] ?? ''),
-            ],
-        ];
-        echo json_encode($config, JSON_PRETTY_PRINT);
-        exit;
-    }
-
     // Media - API Get All (JSON)
     if ($requestUri === '/admin/media/api/all' && $method === 'GET') {
         $controller = new \App\Controllers\Admin\MediaAdminController();
