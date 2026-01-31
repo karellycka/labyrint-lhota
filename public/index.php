@@ -4,6 +4,10 @@
  * Front Controller - Entry point for all requests
  */
 
+// #region agent log
+error_log('[DEBUG] index.php:entry | Request started | uri=' . ($_SERVER['REQUEST_URI']??'') . ' | method=' . ($_SERVER['REQUEST_METHOD']??''));
+// #endregion
+
 // Load configuration
 require_once __DIR__ . '/../config/config.php';
 

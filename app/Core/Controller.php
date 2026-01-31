@@ -21,6 +21,15 @@ class Controller
      */
     protected function view(string $view, array $data = [], string $layout = 'main'): void
     {
+        // #region agent log
+        error_log('[DEBUG] Controller:view:entry | view=' . $view . ' | layout=' . $layout . ' | headersSent=' . (headers_sent()?'yes':'no'));
+        // #endregion
+
+        // Ensure Content-Type is set for HTML responses
+        if (!headers_sent()) {
+            header('Content-Type: text/html; charset=UTF-8');
+        }
+
         // Extract data to variables
         extract($data);
 
@@ -34,6 +43,9 @@ class Controller
         $viewFile = __DIR__ . "/../Views/{$view}.php";
 
         if (!file_exists($viewFile)) {
+            // #region agent log
+            error_log('[DEBUG] Controller:view:viewNotFound | VIEW FILE DOES NOT EXIST | view=' . $view . ' | viewFile=' . $viewFile);
+            // #endregion
             die("View {$view} not found");
         }
 
@@ -41,6 +53,10 @@ class Controller
 
         // Get view content
         $content = ob_get_clean();
+
+        // #region agent log
+        error_log('[DEBUG] Controller:view:afterBuffer | contentLength=' . strlen($content) . ' | view=' . $view);
+        // #endregion
 
         // Load layout if specified
         if ($layout) {
@@ -54,6 +70,10 @@ class Controller
         } else {
             echo $content;
         }
+
+        // #region agent log
+        error_log('[DEBUG] Controller:view:end | view=' . $view . ' | headers=' . implode(', ', headers_list()));
+        // #endregion
     }
 
     /**
