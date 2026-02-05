@@ -187,8 +187,23 @@ mediaResponsiveSrcset($filename, $widths = [320, 640, 1024, 1920])
 
 **Dokumentace**: Viz `DEPLOYMENT_RAILWAY.md`
 
+## Lokální vývojové prostředí
+
+### URL formát
+**Lokální server:** `http://localhost:8888/labyrint`
+
+**Příklady URL:**
+- Homepage: `http://localhost:8888/labyrint/`
+- Admin: `http://localhost:8888/labyrint/admin`
+- Migrace: `http://localhost:8888/labyrint/run_migration_XXX.php`
+
+### MAMP nastavení
+- PHP Server: localhost:8888
+- MySQL: localhost:8889
+- Document Root: obsahuje složku `labyrint`
+
 ## Datum vytvoření
 2026-01-21
 
 ## Datum poslední aktualizace
-2026-01-26
+2026-02-05
